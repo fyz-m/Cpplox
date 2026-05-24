@@ -6,13 +6,13 @@ class Lox {
 
   private:
 
-    inline static bool hadError = false;
+   inline static bool hadError = false;
 
   public:
 
   private:
 
-    void report(int line, std::string &where, std::string &message);
+    static void report(int line, std::string where, std::string_view message);
      
   public:
 
@@ -22,7 +22,7 @@ class Lox {
 
     void run(const std::string& source);
   
-    void error(int line, std::string &message);
+    static void error(int line, std::string_view message);
     
    
 };

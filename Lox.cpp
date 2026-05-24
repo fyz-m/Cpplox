@@ -6,6 +6,8 @@
 #include <sstream>
 #include <fstream>
 #include <stdexcept>
+#include "Scanner.hpp"
+#include "Token.hpp"
 
   void Lox::runFile(const std::string& file) 
   {
@@ -34,8 +36,8 @@
 
   void Lox::run(const std::string& source)
   {
-    Scanner scanner = new Scanner(source);
-    std::vector<std::string> tokens = scanner.scanTokens();
+    Scanner scanner =  Scanner(source);
+    std::vector<Token> tokens = scanner.scanTokens();
     
     for (const auto &x : tokens)
     {
@@ -43,15 +45,15 @@
     }
   }
 
-  void Lox::error(int line, std::string &message)
+   void Lox::error(int line, std::string_view message)
   {
-    report(line, "" ,message);
+    report(line, "aa" , message);
   }
 
-  void Lox::report(int line, std::string &where, std::string &message)
+  void Lox::report(int line, std::string where, std::string_view message)
   {
-  std::cout << "[line " << line << " ] Error" << where << ": " << message << std::endl;
-  hadError = true;
+    std::cout << "[line " << line << " ] Error" << where << ": " << message << std::endl;
+    hadError = true;
   }
 
   
