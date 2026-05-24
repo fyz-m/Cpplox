@@ -4,13 +4,13 @@
 
   Token::Token(
           TokenType type, 
-          std::string lexeme, 
-          std::string literal,
+          std::string&& lexeme, 
+          std::string&& literal,
           int line
           )
           : type{type}, 
-            lexeme{std::move(lexeme)}, 
-            literal{std::move(literal)}, 
+            lexeme{lexeme},
+            literal{literal}, 
             line{line}
             {
             }
