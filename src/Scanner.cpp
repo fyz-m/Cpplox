@@ -1,7 +1,10 @@
 #include "Scanner.hpp"
 #include "Token.hpp"
 #include <cstddef>
+#include <variant>
 #include "Lox.hpp"
+
+
 
 Scanner::Scanner(const std::string& Source) 
         : Source{Source}  
@@ -17,7 +20,8 @@ std::vector <Token> Scanner::scanTokens()
   }
 
   // Add EOF token to the end
-  tokens.push_back(Token(TokenType::_EOF, NULL, NULL, line));
+  // tokens.push_back(Token(TokenType::_EOF, NULL, NULL, line));
+  addToken(TokenType::_EOF);
   return tokens;
 } 
 
@@ -81,14 +85,30 @@ void Scanner::scanToken()
         break;
 
       case '"': string(); break;
+
+
       default:
-        Lox::error(line, "Unexpected character");
+        if (std::isdigit(c)) 
+        {
+          number();
+        }
+        else
+        {
+          Lox::error(line, "Unexpected character");
+        }
         break;
     }
 
   }
 
-void Scanner::addToken(TokenType TokenType, std::string literal)
+void Scanner::addToken(TokenType TokenType)
+{
+  // assign type as std::monostate
+  literaltypes t = {};
+  addToken(TokenType, t);
+}
+
+void Scanner::addToken(TokenType TokenType, literaltypes literal)
 {
   std::string lexeme = Source.substr(start, (current - start));
 
@@ -122,6 +142,15 @@ char Scanner::peek()
   return Source.at(current);
 }
 
+char Scanner::peekNext()
+{
+  // Return current+1 (unconsumed) char
+  if (current+1 >= Source.length())
+     return '\0';
+
+  return Source.at(current+1);
+}
+
 void Scanner::string()
 {
   while (peek() != '"')
@@ -141,6 +170,23 @@ void Scanner::string()
   // Consume closing "
   advance();
 
-  std::string str_literal = Source.substr(start, (current - start));
-  addToken(TokenType::STRING, std::move(str_literal));
+  std::string str_literal = Source.substr(start+1, (current - start - 1));
+  addToken(TokenType::STRING, str_literal);
+}
+
+void Scanner::number()
+{
+  while(std::isdigit(peek())) 
+        advance();
+  
+  if (peek() == '.' && std::isdigit(peekNext()))
+  {
+    // Consume '.'
+    advance();
+  
+    while(std::isdigit(peek())) 
+         advance();
+  } 
+
+  addToken(TokenType::NUMBER, std::stof(Source.substr(start, current - start)));
 }

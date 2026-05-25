@@ -1,5 +1,6 @@
 #pragma once
 #include <string>
+#include <variant>
 #include <vector>
 #include "Token.hpp"
 
@@ -33,12 +34,18 @@ class Scanner {
     // Adds a token 
     void addToken(
           TokenType TokenType, 
-          std::string literal = NULL
+          literaltypes literal 
           );
+    
+    void addToken(TokenType TokenType);
 
     bool match(char expected);
 
     char peek();
 
+    char peekNext();
+
     void string();
+
+    void number();
 };
