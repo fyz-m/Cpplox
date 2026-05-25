@@ -5,19 +5,19 @@
   Token::Token(
           TokenType type, 
           std::string&& lexeme, 
-          literaltypes literal,
+          literaltypes&& literal,
           int line
           )
           : type{type}, 
-            lexeme{lexeme},
-            literal{literal}, 
+            lexeme{std::move(lexeme)},
+            literal{std::move(literal)}, 
             line{line}
             {
             }
           
-    std::string Token::toString()
+    std::string Token::toString() const
     { 
       std::stringstream s;
-      // s << static_cast<int>(type) << " " << lexeme << " " << literal; 
+      s << lexeme << " "; 
       return s.str();
     }
