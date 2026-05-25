@@ -1,5 +1,6 @@
 #pragma once
 #include <string>
+#include <variant>
 
 enum class TokenType {
   // Single-character tokens.
@@ -22,6 +23,8 @@ enum class TokenType {
   _EOF
 };
 
+using literaltypes = std::variant<std::monostate, std::string, float>;
+
 class Token {
 
   public:
@@ -30,14 +33,14 @@ class Token {
 
     const std::string lexeme;
 
-    const std::string literal;
+    const literaltypes literal;
 
     const int line;
 
     Token(
           TokenType type, 
           std::string&& lexeme, 
-          std::string&& literal,
+          literaltypes literal,
           int line
          );
 
