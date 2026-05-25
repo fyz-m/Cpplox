@@ -37,4 +37,8 @@ class Scanner {
           );
 
     bool match(char expected);
+
+    char peek();
+
+    void string();
 };
