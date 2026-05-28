@@ -1,6 +1,6 @@
 #include "Scanner.hpp"
 #include "Token.hpp"
-#include <cstddef>
+#include <cctype>
 #include <variant>
 #include "Lox.hpp"
 
@@ -19,9 +19,7 @@ std::vector <Token> Scanner::scanTokens()
     scanToken();
   }
 
-  // Add EOF token to the end
-  // tokens.push_back(Token(TokenType::_EOF, NULL, NULL, line));
-  addToken(TokenType::_EOF);
+  tokens.emplace_back(TokenType::_EOF, "", std::monostate{}, line);
   return tokens;
 } 
 
@@ -92,6 +90,10 @@ void Scanner::scanToken()
         {
           number();
         }
+        else if (std::isalpha(static_cast<unsigned char>(c)) || c == '_')
+        {
+          identifier();
+        }
         else
         {
           Lox::error(line, "Unexpected character");
@@ -99,20 +101,20 @@ void Scanner::scanToken()
         break;
     }
 
-  }
-
-void Scanner::addToken(TokenType TokenType)
-{
-  // assign type as std::monostate
-  literaltypes t = {};
-  addToken(TokenType, t);
 }
 
-void Scanner::addToken(TokenType TokenType, literaltypes literal)
+// void Scanner::addToken(TokenType TokenType)
+// {
+//   // assign type as std::monostate
+//   literaltypes t = {};
+//   addToken(TokenType, std::move(t));
+// }
+
+void Scanner::addToken(TokenType TokenType, literaltypes&& literal)
 {
   std::string lexeme = Source.substr(start, (current - start));
 
-  tokens.push_back(Token(TokenType, std::move(lexeme), std::move(literal), line));
+  tokens.emplace_back(TokenType, std::move(lexeme), std::move(literal), line);
 }
 
 char Scanner::advance()
@@ -171,7 +173,7 @@ void Scanner::string()
   advance();
 
   std::string str_literal = Source.substr(start+1, (current - start - 1));
-  addToken(TokenType::STRING, str_literal);
+  addToken(TokenType::STRING, std::move(str_literal));
 }
 
 void Scanner::number()
@@ -185,8 +187,22 @@ void Scanner::number()
     advance();
   
     while(std::isdigit(peek())) 
-         advance();
+          advance();
   } 
 
   addToken(TokenType::NUMBER, std::stof(Source.substr(start, current - start)));
+}
+
+void Scanner::identifier()
+{
+  while (std::isalnum(peek()) || peek() == '_') advance();
+
+  std::string text = Source.substr(start, (current - start));
+  
+  auto type = keywords.find(text);
+
+  if (type == keywords.end())
+      addToken(TokenType::IDENTIFIER);
+  else
+      addToken(type->second);
 }
