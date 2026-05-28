@@ -16,11 +16,11 @@ class Lox {
      
   public:
 
-    void runFile(const std::string& file);
+    static void runFile(const std::string& file);
   
-    void runPrompt();  
+    static void runPrompt();  
 
-    void run(const std::string& source);
+    static void run(const std::string& source);
   
     static void error(int line, std::string_view message);
     
