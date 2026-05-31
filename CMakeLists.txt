@@ -11,7 +11,10 @@ add_executable(cpplox src/main.cpp
                       src/Scanner.cpp
                       src/Scanner.hpp
                       src/Token.cpp
-                      src/Token.hpp                                            
+                      src/Token.hpp
+                      src/Expr.hpp
+                      src/AstPrinter.cpp 
+                      src/AstPrinter.hpp                                           
 )
 
 target_compile_options(cpplox  PRIVATE -Wall -Wextra -Wpedantic  -g -O0 )
