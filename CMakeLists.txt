@@ -14,7 +14,9 @@ add_executable(cpplox src/main.cpp
                       src/Token.hpp
                       src/Expr.hpp
                       src/AstPrinter.cpp 
-                      src/AstPrinter.hpp                                           
+                      src/AstPrinter.hpp
+                      src/Parser.cpp                                           
+                      src/Parser.hpp                                           
 )
 
 target_compile_options(cpplox  PRIVATE -Wall -Wextra -Wpedantic  -g -O0 )
