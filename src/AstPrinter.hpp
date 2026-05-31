@@ -1,7 +1,7 @@
 #pragma once
 #include "Expr.hpp"
+#include <initializer_list>
 #include <sstream>
-#include <vector>
 
 struct Printer : public Visitor {
     
@@ -14,6 +14,6 @@ struct Printer : public Visitor {
     void visit(Grouping& expr) override;
     void visit(Unary& expr) override;
 
-    void parenthesize(const std::string& name, std::vector<std::reference_wrapper< Expr>>& exprs);
+    void parenthesize(const std::string& name, std::initializer_list<Expr*> exprs);
 };
 
