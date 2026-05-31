@@ -1,6 +1,5 @@
 #pragma once
 #include <string>
-#include <variant>
 #include <vector>
 #include "Token.hpp"
 
@@ -8,6 +7,7 @@
 class Scanner {
 
   private:
+    
     
     const std::string& Source;
 
@@ -34,10 +34,10 @@ class Scanner {
     // Adds a token 
     void addToken(
           TokenType TokenType, 
-          literaltypes literal 
-          );
+          literaltypes&& literal = {}  // Rvalue to force caller to use std::move
+          );                           // So caller is aware that the object will be moved 
     
-    void addToken(TokenType TokenType);
+    // void addToken(TokenType TokenType);
 
     bool match(char expected);
 
@@ -48,4 +48,6 @@ class Scanner {
     void string();
 
     void number();
+
+    void identifier();
 };
