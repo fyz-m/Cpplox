@@ -10,11 +10,13 @@ class Parser {
     private:
 
         std::vector<Token> tokens;
+
+        // Token pointer/index 
         int current {0};
     
     public:
 
-        Parser(const std::vector<Token>& tokens);
+        Parser(const std::vector<Token>&& tokens);
     
     private:
     
@@ -32,15 +34,21 @@ class Parser {
 
         std::unique_ptr<Expr> primary();
 
-        bool match(std::initializer_list<TokenType> types);
+        // Returns true if current token is equal to arg type
+        bool check(TokenType expected_type);
+
+        // Conditional advance        
+        bool match(std::initializer_list<TokenType> expected_types);
 
         bool isAtEnd();
 
+        // Return current token but doesn't consume it
         Token& peek();
 
+        // Return previously consumed token
         Token& previous();
 
+        // Consume token at index current
         Token& advance();
-
 
 };
