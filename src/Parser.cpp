@@ -12,6 +12,16 @@ Parser::Parser(const std::vector<Token>&& tokens)
        : tokens{std::move(tokens)} 
        {}
 
+std::unique_ptr<Expr> Parser::parse() {
+
+    try { 
+        return expression(); 
+    }
+    catch (const ParseError& e) {
+        return nullptr;
+    }
+}   
+
 std::unique_ptr<Expr> Parser::expression() {
     return equality();
 }
@@ -29,8 +39,7 @@ std::unique_ptr<Expr> Parser::equality() {
 
     return expr;
 }
-//     1+1 > 3-2
-// 
+
 std::unique_ptr<Expr> Parser::comparison() {
 
     // Left child node of the binary AST node
@@ -183,6 +192,7 @@ void Parser::synchronize() {
             case TokenType::PRINT:
             case TokenType::RETURN:
             return;
+            default: break;
         }
         advance();
     }

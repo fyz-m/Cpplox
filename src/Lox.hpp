@@ -1,4 +1,5 @@
 #pragma once
+#include "Token.hpp"
 #include <string>
 
 
@@ -12,7 +13,9 @@ class Lox {
 
   private:
 
-    static void report(int line, std::string where, std::string_view message);
+    static void report(int line, std::string_view where, std::string_view message);
+
+    static void report(int line, std::string_view message);
      
   public:
 
@@ -22,6 +25,8 @@ class Lox {
 
     static void run(const std::string& source);
   
+    static void error(Token& token, std::string_view message);
+
     static void error(int line, std::string_view message);
     
    

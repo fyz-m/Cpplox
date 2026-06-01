@@ -1,3 +1,4 @@
+#pragma once
 #include "Token.hpp"
 #include <memory>
 
@@ -7,6 +8,7 @@ struct Binary;
 struct Literal;
 struct Grouping;
 struct Unary;
+
 
 struct Visitor {
 
@@ -28,9 +30,9 @@ struct Expr {
 
 struct Binary : public Expr {
 
-    const std::unique_ptr<const Expr> left;
-    const Token                       operator_;
-    const std::unique_ptr<const Expr> right;
+     std::unique_ptr< Expr> left;
+     const Token                       operator_;
+     std::unique_ptr<Expr> right;
 
     Binary(std::unique_ptr<Expr> left, 
            Token&& operator_,
@@ -59,7 +61,7 @@ struct Literal : public Expr {
 
 struct Grouping : public Expr {
 
-    const std::unique_ptr<const Expr> expression;
+    std::unique_ptr<Expr> expression;
 
     Grouping(std::unique_ptr<Expr> expression) : expression{std::move(expression)} {}
 
@@ -71,8 +73,8 @@ struct Grouping : public Expr {
 
 struct Unary : public Expr {
 
-    const std::unique_ptr<const Expr> expression;
-    const Token                       operator_;
+    std::unique_ptr<Expr> expression;
+    const Token                 operator_;
 
     Unary(std::unique_ptr<Expr> expression,
           Token&& operator_) 

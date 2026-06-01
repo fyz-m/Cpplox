@@ -23,8 +23,10 @@ enum class TokenType {
 
   _EOF
 };
-
-using literaltypes = std::variant<std::monostate, std::string, float>;
+  
+// Types that valid for literals in the Lox language
+// monostate == null
+using literaltypes = std::variant<std::monostate, std::string, float, bool>;
 
 class Token {
 
@@ -34,11 +36,11 @@ class Token {
 
     const std::string lexeme;
 
-    const literaltypes literal;
+    literaltypes literal;
 
     const int line;
     
-public:
+  public:
 
 
     Token(

@@ -24,7 +24,8 @@ class Parser {
     public:
 
         Parser(const std::vector<Token>&& tokens);
-    
+
+        std::unique_ptr<Expr> parse();
     private:
     
         std::unique_ptr<Expr> expression();

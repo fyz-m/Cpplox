@@ -8,6 +8,8 @@
 #include <stdexcept>
 #include "Scanner.hpp"
 #include "Token.hpp"
+#include "Parser.hpp"
+#include "AstPrinter.hpp"
 
   void Lox::runFile(const std::string& file) 
   {
@@ -36,24 +38,41 @@
 
   void Lox::run(const std::string& source)
   {
-    Scanner scanner =  Scanner(source);
+    Scanner scanner = Scanner(source);
     std::vector<Token> tokens = scanner.scanTokens();
     
-    for (const auto &x : tokens)
-    {
-      std::cout << x << std::endl;
-    }
+    Parser parser(std::move(tokens));
+    auto expr = parser.parse();    
+    
+    if (hadError) return;
+
+    Printer printer;
+
+    std::cout << printer.print(*expr);
   }
 
-   void Lox::error(int line, std::string_view message)
+   void Lox::error(Token& token, std::string_view message)
   {
-    report(line, "aa" , message);
+    std::string location {" at '" + token.lexeme + "' "} ;
+    report(token.line, location, message);
   }
 
-  void Lox::report(int line, std::string where, std::string_view message)
+  void Lox::error(int line, std::string_view message) 
+  {
+    report(line, message);  
+  }
+
+  void Lox::report(int line, std::string_view where, std::string_view message)
   {
     std::cout << "[line " << line << " ] Error" << where << ": " << message << std::endl;
     hadError = true;
   }
+
+  void Lox::report(int line, std::string_view message)
+  {
+    std::cout << "[ line " << line << " ] Error"  << ": " << message << std::endl;
+    hadError = true;
+  }
+
 
   

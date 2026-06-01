@@ -9,7 +9,7 @@
 
 
     std::string Printer::print(Expr& expr) {
-        s.clear();   // Clear if called again
+    
         expr.accept(*this);
         return s.str();
     }
