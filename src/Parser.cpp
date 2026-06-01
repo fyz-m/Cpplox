@@ -1,5 +1,6 @@
 #include "Parser.hpp"
 #include "Expr.hpp"
+#include "Lox.hpp"
 #include "Token.hpp"
 #include <memory>
 #include <utility>
@@ -119,6 +120,7 @@ std::unique_ptr<Expr> Parser::primary() {
         return std::make_unique<Grouping>(std::move(expr));
     }
     
+    throw error(peek(), "Expect expression.");
 }
 
 
@@ -155,6 +157,34 @@ Token& Parser::advance() {
     return previous();
 }  
 
-void Parser::consume(TokenType type, std::string_view error_message) {
-
+Token& Parser::consume(TokenType type, std::string&& error_message) {
+    if (check(type)) return advance();
+    throw error(peek(), std::move(error_message));
 }
+
+ParseError Parser::error(Token& token, std::string error_message) {
+    Lox::error(token, error_message);
+    return ParseError();
+}
+
+void Parser::synchronize() {
+    advance();
+
+    while(!isAtEnd()) {
+        if(previous().type == TokenType::SEMICOLON) return;
+
+        switch (peek().type) {
+            case TokenType::CLASS:
+            case TokenType::FUN:
+            case TokenType::VAR:
+            case TokenType::FOR:
+            case TokenType::IF:
+            case TokenType::WHILE:
+            case TokenType::PRINT:
+            case TokenType::RETURN:
+            return;
+        }
+        advance();
+    }
+}
+

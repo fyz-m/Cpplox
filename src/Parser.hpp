@@ -1,9 +1,16 @@
 #pragma once
 #include "Expr.hpp"
 #include "Token.hpp"
+#include <exception>
 #include <initializer_list>
 #include <memory>
 #include <vector>
+
+
+
+
+class ParseError : public std::exception {};
+
 
 class Parser {
 
@@ -50,5 +57,13 @@ class Parser {
 
         // Consume token at index current
         Token& advance();
+
+        // Consume current token which must be of the type given in argument
+        Token& consume(TokenType type, std::string&& error_message);
+
+        ParseError error(Token& token, std::string error_message);
+
+        // Discard tokens until statement is found
+        void synchronize();
 
 };
