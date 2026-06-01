@@ -166,12 +166,12 @@ Token& Parser::advance() {
     return previous();
 }  
 
-Token& Parser::consume(TokenType type, std::string&& error_message) {
+Token& Parser::consume(TokenType type, std::string_view error_message) {
     if (check(type)) return advance();
-    throw error(peek(), std::move(error_message));
+    throw error(peek(), error_message);
 }
 
-ParseError Parser::error(Token& token, std::string error_message) {
+ParseError Parser::error(Token& token, std::string_view error_message) {
     Lox::error(token, error_message);
     return ParseError();
 }

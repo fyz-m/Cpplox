@@ -4,6 +4,7 @@
 #include <exception>
 #include <initializer_list>
 #include <memory>
+#include <string_view>
 #include <vector>
 
 
@@ -60,9 +61,9 @@ class Parser {
         Token& advance();
 
         // Consume current token which must be of the type given in argument
-        Token& consume(TokenType type, std::string&& error_message);
+        Token& consume(TokenType type, std::string_view error_message);
 
-        ParseError error(Token& token, std::string error_message);
+        ParseError error(Token& token, std::string_view error_message);
 
         // Discard tokens until statement is found
         void synchronize();
