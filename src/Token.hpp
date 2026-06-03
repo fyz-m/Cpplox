@@ -26,7 +26,7 @@ enum class TokenType {
   
 // Types that valid for literals in the Lox language
 // monostate == null
-using literaltypes = std::variant<std::monostate, std::string, float, bool>;
+using literaltypes = std::variant<std::monostate, std::string, double, bool>;
 
 class Token {
 

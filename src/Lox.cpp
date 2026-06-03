@@ -53,7 +53,7 @@
 
    void Lox::error(Token& token, std::string_view message)
   {
-    std::string location {" at '" + token.lexeme + "' "} ;
+    std::string location {" at '" + token.lexeme + "' "};
     report(token.line, location, message);
   }
 
@@ -64,7 +64,7 @@
 
   void Lox::report(int line, std::string_view where, std::string_view message)
   {
-    std::cout << "[line " << line << " ] Error" << where << ": " << message << std::endl;
+    std::cout << "[ line " << line << " ] Error" << where << ": " << message << std::endl;
     hadError = true;
   }
 

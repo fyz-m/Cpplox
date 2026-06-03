@@ -30,7 +30,7 @@ struct Expr {
 
 struct Binary : public Expr {
 
-     std::unique_ptr< Expr> left;
+     std::unique_ptr<Expr> left;
      const Token                       operator_;
      std::unique_ptr<Expr> right;
 

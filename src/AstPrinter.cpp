@@ -25,7 +25,7 @@
         {
             s << "nil";
         }
-        else if (auto ptr = std::get_if<float>(&expr.value))
+        else if (auto ptr = std::get_if<double>(&expr.value))
         {
             s << *ptr;
         }
