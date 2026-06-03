@@ -38,6 +38,28 @@ void Interpreter::visit(Binary &expr) {
             break;
         }
         
+        case TokenType::GREATER:
+            value = std::get<double>(lhs) > std::get<double>(rhs);
+            break;
+
+        case TokenType::GREATER_EQUAL:
+            value = std::get<double>(lhs) >= std::get<double>(rhs);
+            break;
+    
+        case TokenType::LESS:
+            value = std::get<double>(lhs) < std::get<double>(rhs);
+            break;
+            
+        case TokenType::LESS_EQUAL:
+            value = std::get<double>(lhs) <= std::get<double>(rhs);
+            break;
+
+        case TokenType::EQUAL:
+            value = isEqual(lhs, rhs);
+        
+        case TokenType::BANG_EQUAL:
+            value = !isEqual(lhs, rhs);
+
         // error 
         default: break;
     }
@@ -88,4 +110,8 @@ bool Interpreter::isTruthy(literaltypes& val) {
     // All other values 
     return true;
     
+}
+
+bool Interpreter::isEqual(literaltypes& val1, literaltypes& val2) {
+    return val1 == val2;
 }

@@ -22,4 +22,6 @@ class Interpreter : public Visitor {
 
         // 
         bool isTruthy(literaltypes& val);  
+
+        bool isEqual(literaltypes& val1, literaltypes& val2);
 };
