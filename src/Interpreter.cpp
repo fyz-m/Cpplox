@@ -1,9 +1,19 @@
 #include "Interpreter.hpp"
+#include "Lox.hpp"
 #include "Token.hpp"
 #include <cerrno>
+#include <iostream>
 #include <variant>
 
 
+void Interpreter::Interpret(Expr& expression) {
+    try {
+        auto value = evaluate(expression);
+        std::cout << stringify(value) << std::endl;;
+    } catch (const RuntimeError& e) {
+        Lox::runtimeError(e);
+    }
+}
 
 void Interpreter::visit(Binary &expr) {
 
@@ -13,52 +23,63 @@ void Interpreter::visit(Binary &expr) {
     switch (expr.operator_.type) {
 
         case TokenType::MINUS:
+            checkifOperandsAreNumber(expr.operator_, lhs, rhs);
             value = std::get<double>(lhs) - std::get<double>(rhs);
             break;
 
         case TokenType::SLASH:
+            checkifOperandsAreNumber(expr.operator_, lhs, rhs);
             value = std::get<double>(lhs) / std::get<double>(rhs);
             break;
         
         case TokenType::STAR:
+            checkifOperandsAreNumber(expr.operator_, lhs, rhs);
             value = std::get<double>(lhs) * std::get<double>(rhs);
             break;
 
-        case TokenType::PLUS: {
+        case TokenType::PLUS: 
             // Adding numeric literals 
             if (std::holds_alternative<double>(lhs) &&
                 std::holds_alternative<double>(rhs)) { 
                 value = std::get<double>(lhs) + std::get<double>(rhs);
+                break;
             }
             // Adding string literals
             if (std::holds_alternative<std::string>(lhs) &&
                 std::holds_alternative<std::string>(rhs)) { 
                 value = std::get<std::string>(lhs) + std::get<std::string>(rhs);
+                break;
             }
+            throw RuntimeError(expr.operator_, "Cannot add string and numeric literal");    
             break;
-        }
         
         case TokenType::GREATER:
+            checkifOperandsAreNumber(expr.operator_, lhs, rhs);
             value = std::get<double>(lhs) > std::get<double>(rhs);
             break;
 
         case TokenType::GREATER_EQUAL:
+            checkifOperandsAreNumber(expr.operator_, lhs, rhs);
             value = std::get<double>(lhs) >= std::get<double>(rhs);
             break;
     
         case TokenType::LESS:
+            checkifOperandsAreNumber(expr.operator_, lhs, rhs);
             value = std::get<double>(lhs) < std::get<double>(rhs);
             break;
             
         case TokenType::LESS_EQUAL:
+            checkifOperandsAreNumber(expr.operator_, lhs, rhs);
             value = std::get<double>(lhs) <= std::get<double>(rhs);
             break;
 
         case TokenType::EQUAL:
             value = isEqual(lhs, rhs);
+            break;
         
         case TokenType::BANG_EQUAL:
             value = !isEqual(lhs, rhs);
+            break;
 
         // error 
         default: break;
@@ -82,9 +103,10 @@ void Interpreter::visit(Unary& expr) {
 
     switch (expr.operator_.type) {
         
-        case TokenType::MINUS:
+        case TokenType::MINUS: {
+          checkifOperandisNumber(expr.operator_, rhs);
           value = -std::get<double>(rhs);
-          break;
+          break; }
 
         case TokenType::BANG:
           value = isTruthy(rhs);
@@ -114,4 +136,19 @@ bool Interpreter::isTruthy(literaltypes& val) {
 
 bool Interpreter::isEqual(literaltypes& val1, literaltypes& val2) {
     return val1 == val2;
+}
+
+void Interpreter::checkifOperandisNumber(const Token& operator_, const literaltypes& operand) {
+
+    if (std::holds_alternative<double>(operand)) return;
+
+    throw RuntimeError(operator_, "Operand must be a number.");
+}
+
+void Interpreter::checkifOperandsAreNumber(const Token& operator_, const literaltypes& left, const literaltypes& right) {
+
+    if (std::holds_alternative<double>(left) && 
+        std::holds_alternative<double>(right)) return;
+
+    throw RuntimeError(operator_, "Operand must be a number.");
 }
