@@ -27,7 +27,8 @@
 
     if (hadError)
        throw std::runtime_error("65");
-           
+    if (hadRuntimeError)
+       throw std::runtime_error("70");           
 
   }
 
@@ -38,24 +39,29 @@
 
   void Lox::run(const std::string& source)
   {
-    Scanner scanner = Scanner(source);
+    Scanner scanner(source);
     std::vector<Token> tokens = scanner.scanTokens();
-    
+
     Parser parser(std::move(tokens));
-    auto expr = parser.parse();    
+    auto exprAST = parser.parse();
     
+    // if syntax error
     if (hadError) return;
 
-    Printer printer;
-
-    std::cout << printer.print(*expr);
+    interpreter.interpret(*exprAST);
   }
+
+   void Lox::runtimeError(const RuntimeError& e) {
+
+      std::cout << e.what() << "\n[ line " << e.token.line << " ]";   
+      hadRuntimeError = true; 
+   }
 
    void Lox::error(Token& token, std::string_view message)
-  {
+   {
     std::string location {" at '" + token.lexeme + "' "};
     report(token.line, location, message);
-  }
+   }
 
   void Lox::error(int line, std::string_view message) 
   {
