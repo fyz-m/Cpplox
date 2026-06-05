@@ -18,7 +18,8 @@ add_executable(cpplox src/main.cpp
                       src/Parser.cpp                                           
                       src/Parser.hpp
                       src/Interpreter.cpp
-                      src/Interpreter.hpp                                           
+                      src/Interpreter.hpp
+                      src/Stmt.hpp                                           
 )
 
 target_compile_options(cpplox  PRIVATE -Wall -Wextra -Wpedantic  -g -O0 )
