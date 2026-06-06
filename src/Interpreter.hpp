@@ -1,14 +1,17 @@
 #pragma once
 #include "Expr.hpp"
-#include "Parser.hpp"
+#include "Stmt.hpp"
 #include "Token.hpp"
 #include <stdexcept>
+#include <vector>
+#include "Enviroment.hpp"
 
 class Interpreter : public Visitor, public StmtVisitor {
-    
+
     private:
 
         literaltypes value;
+        Enviroment environment;
 
     public:
 
@@ -18,12 +21,14 @@ class Interpreter : public Visitor, public StmtVisitor {
         // Statement node visitor implementation
         void visit(PrintStmt& stmt);
         void visit(ExpressionStmt& stmt);
+        void visit(VarDeclarationStmt& stmt);
 
         // Expression node visitor implementation
         void visit(Binary& expr); 
         void visit(Literal& expr);
         void visit(Grouping& expr);
         void visit(Unary& expr);
+        void visit(Variable& expr);
 
     private: 
 

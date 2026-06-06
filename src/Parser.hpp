@@ -29,6 +29,16 @@ class Parser {
 
     private:
 
+        std::unique_ptr<Stmt> declaration();
+
+        std::unique_ptr<VarDeclarationStmt> varDeclaration();
+
+        std::unique_ptr<Stmt> statement();
+
+        std::unique_ptr<ExpressionStmt> expressionStatement();
+
+        std::unique_ptr<PrintStmt> printStatement();
+
         // These functions return an AST for a given expression 
         std::unique_ptr<Expr> expression();
 
@@ -44,11 +54,6 @@ class Parser {
 
         std::unique_ptr<Expr> primary();
 
-        std::unique_ptr<Stmt> statement();
-
-        std::unique_ptr<ExpressionStmt> expressionStatement();
-
-        std::unique_ptr<PrintStmt> printStatement();
 
         // Returns true if current token is equal to arg type
         bool check(TokenType expected_type);

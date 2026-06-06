@@ -1,6 +1,7 @@
 #include "Interpreter.hpp"
+#include "Expr.hpp"
 #include "Lox.hpp"
-#include "Parser.hpp"
+#include "Stmt.hpp"
 #include "Token.hpp"
 #include <cerrno>
 #include <iostream>
@@ -8,7 +9,7 @@
 #include <string>
 #include <variant>
 #include <vector>
-
+#include "Enviroment.hpp"
 
 void Interpreter::interpret(std::vector<std::unique_ptr<Stmt>>& statements) {
     try {
@@ -20,14 +21,31 @@ void Interpreter::interpret(std::vector<std::unique_ptr<Stmt>>& statements) {
     }
 }
 
+// Methods for evaluating Statements //
+
 void Interpreter::visit(PrintStmt& stmt) {
-     auto value = evaluate(*stmt.expression);
-     std::cout << stringify(value);     
+     auto val = evaluate(*stmt.expression);
+     std::cout << stringify(val) << std::endl;     
+}
+
+void Interpreter::visit(VarDeclarationStmt& stmt) {
+
+    literaltypes val {std::monostate{}};
+
+    if(stmt.initializer != nullptr)
+         val = evaluate(*stmt.initializer);
+    
+    environment.define(stmt.var_name.lexeme, std::move(val));
 }
 
 void Interpreter::visit(ExpressionStmt& stmt) {
     evaluate(*stmt.expression);
 }
+
+
+// Methods for evaluating Expressions //
+
+
 void Interpreter::visit(Binary &expr) {
 
     auto lhs = evaluate(*expr.left.get());
@@ -127,6 +145,10 @@ void Interpreter::visit(Unary& expr) {
         default: break;
         // error
     }
+}
+
+void Interpreter::visit(Variable& expr) {
+    this->value = environment.get(expr.name);
 }
 
 literaltypes Interpreter::evaluate(Expr& expr) {

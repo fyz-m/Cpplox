@@ -1,6 +1,7 @@
 #include "Parser.hpp"
 #include "Expr.hpp"
 #include "Lox.hpp"
+#include "Stmt.hpp"
 #include "Token.hpp"
 #include <memory>
 #include <utility>
@@ -13,12 +14,39 @@ Parser::Parser(const std::vector<Token>&& tokens)
 
 std::vector<std::unique_ptr<Stmt>> Parser::parse() {
     
-    std::vector<std::unique_ptr<Stmt>> statements;
-
+    std::vector<std::unique_ptr<Stmt>> statements{};
+    
     while(!isAtEnd()) {
-        statements.push_back(statement());
+        statements.push_back(declaration());
     }
     return statements;
+}
+
+std::unique_ptr<Stmt> Parser::declaration() {
+
+    try { 
+        if (match({TokenType::VAR})) 
+            return varDeclaration();
+
+        return statement();
+
+    } catch (const ParseError& e) {
+        synchronize();
+        return nullptr;   
+    }
+}   
+
+std::unique_ptr<VarDeclarationStmt> Parser::varDeclaration() {
+
+    Token& name = consume(TokenType::IDENTIFIER, "Variable declaration requires an indentifier");
+    std::unique_ptr<Expr> initializer {nullptr};
+
+    if (match({TokenType::EQUAL}))
+        initializer = expression();
+
+    consume(TokenType::SEMICOLON, "Expect ';' after variable declaration");
+
+    return std::make_unique<VarDeclarationStmt>(std::move(initializer), std::move(name)); 
 }
 
 std::unique_ptr<Stmt> Parser::statement() {
@@ -144,6 +172,9 @@ std::unique_ptr<Expr> Parser::primary() {
 
     if (match({TokenType::STRING, TokenType::NUMBER})) 
         return std::make_unique<Literal>(std::move(previous().literal));
+
+    if (match({TokenType::IDENTIFIER}))
+        return std::make_unique<Variable>(std::move(previous()));
 
     if (match({TokenType::LEFT_PAREN})) {     
         
