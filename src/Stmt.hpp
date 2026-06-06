@@ -1,3 +1,4 @@
+#pragma once
 #include "Expr.hpp"
 #include <memory>
 
@@ -7,8 +8,8 @@ struct ExpressionStmt;
 
 // Interface for functions to act on a statement node
 struct StmtVisitor {
-    void visit(PrintStmt& stmt);
-    void visit(ExpressionStmt& stmt);
+    virtual void visit(PrintStmt& stmt) = 0;
+    virtual void visit(ExpressionStmt& stmt) = 0;
 };
 
 struct Stmt {
@@ -26,7 +27,7 @@ struct PrintStmt : public Stmt {
 
     PrintStmt(std::unique_ptr<Expr> expression) : expression{std::move(expression)} {}
 
-    void accept(StmtVisitor &v) override {
+    void accept(StmtVisitor& v) override {
         v.visit(*this);
     }
 };
@@ -37,7 +38,7 @@ struct ExpressionStmt : public Stmt {
 
     ExpressionStmt(std::unique_ptr<Expr> expression) : expression{std::move(expression)} {}
 
-    void accept(StmtVisitor &v) override {
+    void accept(StmtVisitor& v) override {
         v.visit(*this);
     }
 };
