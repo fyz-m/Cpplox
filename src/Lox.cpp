@@ -9,7 +9,6 @@
 #include "Scanner.hpp"
 #include "Token.hpp"
 #include "Parser.hpp"
-#include "AstPrinter.hpp"
 
   void Lox::runFile(const std::string& file) 
   {
@@ -25,10 +24,10 @@
 
     run(buffer.str());
 
-    if (hadError)
-       throw std::runtime_error("65");
-    if (hadRuntimeError)
-       throw std::runtime_error("70");           
+    // if (hadError)
+    //    throw std::runtime_error("65");
+    // if (hadRuntimeError)
+    //    throw std::runtime_error("70");           
 
   }
 
@@ -43,17 +42,17 @@
     std::vector<Token> tokens = scanner.scanTokens();
 
     Parser parser(std::move(tokens));
-    auto exprAST = parser.parse();
+    auto statements  = parser.parse();
     
     // if syntax error
     if (hadError) return;
 
-    interpreter.interpret(*exprAST);
+    interpreter.interpret(statements);
   }
 
    void Lox::runtimeError(const RuntimeError& e) {
 
-      std::cout << e.what() << "\n[ line " << e.token.line << " ]";   
+      std::cout << e.what() << "\n[ line " << e.token.line << " ]" << std::endl;   
       hadRuntimeError = true; 
    }
 

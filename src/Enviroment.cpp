@@ -4,8 +4,8 @@
 #include <stdexcept>
 #include <string>
 
-void Enviroment::define(const std::string& name, const literaltypes value) {
-    Map[name] = value;
+void Enviroment::define(const std::string& name, const literaltypes& value) {
+    Map[name] = std::move(value);
 }
 
 literaltypes Enviroment::get(const Token& name) {
