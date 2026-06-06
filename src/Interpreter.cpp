@@ -1,20 +1,33 @@
 #include "Interpreter.hpp"
 #include "Lox.hpp"
+#include "Parser.hpp"
 #include "Token.hpp"
 #include <cerrno>
 #include <iostream>
+#include <memory>
+#include <string>
 #include <variant>
+#include <vector>
 
 
-void Interpreter::Interpret(Expr& expression) {
+void Interpreter::interpret(std::vector<std::unique_ptr<Stmt>>& statements) {
     try {
-        auto value = evaluate(expression);
-        std::cout << stringify(value) << std::endl;;
+        for (const auto& statement : statements) {
+            execute(*statement);
+        } 
     } catch (const RuntimeError& e) {
         Lox::runtimeError(e);
     }
 }
 
+void Interpreter::visit(PrintStmt& stmt) {
+     auto value = evaluate(*stmt.expression);
+     std::cout << stringify(value);     
+}
+
+void Interpreter::visit(ExpressionStmt& stmt) {
+    evaluate(*stmt.expression);
+}
 void Interpreter::visit(Binary &expr) {
 
     auto lhs = evaluate(*expr.left.get());
@@ -73,7 +86,7 @@ void Interpreter::visit(Binary &expr) {
             value = std::get<double>(lhs) <= std::get<double>(rhs);
             break;
 
-        case TokenType::EQUAL:
+        case TokenType::EQUAL_EQUAL:
             value = isEqual(lhs, rhs);
             break;
         
@@ -121,6 +134,10 @@ literaltypes Interpreter::evaluate(Expr& expr) {
      return value;
 }
 
+void Interpreter::execute(Stmt& statement) {
+    statement.accept(*this);
+} 
+
 bool Interpreter::isTruthy(literaltypes& val) {
     // if value is null
     if (val.index() == 0) 
@@ -151,4 +168,19 @@ void Interpreter::checkifOperandsAreNumber(const Token& operator_, const literal
         std::holds_alternative<double>(right)) return;
 
     throw RuntimeError(operator_, "Operand must be a number.");
+}
+
+std::string Interpreter::stringify(literaltypes& value) {
+
+    if (std::holds_alternative<std::monostate>(value)) return "nil";
+    
+    if (auto number =  std::get_if<double>(&value)) {
+         return std::to_string(*number);   
+    };
+
+    if (auto boolean =  std::get_if<bool>(&value)) {
+       return *boolean ? "true" : "false"; 
+    }; 
+
+    return std::get<std::string>(value);
 }
