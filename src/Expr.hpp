@@ -8,7 +8,7 @@ struct Binary;
 struct Literal;
 struct Grouping;
 struct Unary;
-
+struct Variable;
 
 struct Visitor {
 
@@ -16,6 +16,7 @@ struct Visitor {
     virtual void visit(Literal& expr) = 0;
     virtual void visit(Grouping& expr) = 0;
     virtual void visit(Unary& expr) = 0;
+    virtual void visit(Variable& expr) = 0;
 
 };
 
@@ -31,7 +32,7 @@ struct Expr {
 struct Binary : public Expr {
 
      std::unique_ptr<Expr> left;
-     const Token                       operator_;
+     const Token           operator_;
      std::unique_ptr<Expr> right;
 
     Binary(std::unique_ptr<Expr> left, 
@@ -74,7 +75,7 @@ struct Grouping : public Expr {
 struct Unary : public Expr {
 
     std::unique_ptr<Expr> expression;
-    const Token                 operator_;
+    const Token           operator_;
 
     Unary(std::unique_ptr<Expr> expression,
           Token&& operator_) 
@@ -86,4 +87,15 @@ struct Unary : public Expr {
         v.visit(*this);
      }
 
+};
+
+struct Variable : public Expr {
+
+    const Token name;
+
+    Variable(Token&& name) : name{std::move(name)} {}
+
+    void accept(Visitor& v) override {
+        v.visit(*this);
+     }
 };
