@@ -7,20 +7,43 @@
 #include <variant>
 #include <vector>
 
-
 Parser::Parser(const std::vector<Token>&& tokens)
        : tokens{std::move(tokens)} 
        {}
 
-std::unique_ptr<Expr> Parser::parse() {
+std::vector<std::unique_ptr<Stmt>> Parser::parse() {
+    
+    std::vector<std::unique_ptr<Stmt>> statements;
 
-    try { 
-        return expression(); 
+    while(!isAtEnd()) {
+        statements.push_back(statement());
     }
-    catch (const ParseError& e) {
-        return nullptr;
-    }
-}   
+    return statements;
+}
+
+std::unique_ptr<Stmt> Parser::statement() {
+
+    if(match({TokenType::PRINT})) return printStatement();
+
+    return expressionStatement();
+}
+
+std::unique_ptr<ExpressionStmt> Parser::expressionStatement() {
+
+    auto value = expression();
+    consume(TokenType::SEMICOLON, "Expect ';' after expression.");
+    
+    return std::make_unique<ExpressionStmt>(std::move(value));
+}
+
+std::unique_ptr<PrintStmt> Parser::printStatement() {
+
+    auto value = expression();
+    consume(TokenType::SEMICOLON, "Expect ';' after value.");
+
+    return std::make_unique<PrintStmt>(std::move(value));
+}
+
 
 std::unique_ptr<Expr> Parser::expression() {
     return equality();
