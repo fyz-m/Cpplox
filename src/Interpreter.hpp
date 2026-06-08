@@ -10,12 +10,14 @@ class Interpreter : public Visitor, public StmtVisitor {
 
     private:
 
+        // Since visit methods return void, the result of an expression
+        // evaluation is stored in this member
         literaltypes value;
         Enviroment environment;
 
     public:
 
-        // Interpreted API 
+        // Interpreter API 
         void interpret(std::vector<std::unique_ptr<Stmt>>& statements);
 
         // Statement node visitor implementation
@@ -29,6 +31,7 @@ class Interpreter : public Visitor, public StmtVisitor {
         void visit(Grouping& expr);
         void visit(Unary& expr);
         void visit(Variable& expr);
+        void visit(Assignment& expr);
 
     private: 
 

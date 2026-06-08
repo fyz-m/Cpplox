@@ -10,8 +10,15 @@ class Enviroment {
     
     public:
 
-        void define(const std::string& name, const literaltypes& value);
+        // Define a new variable, allows reassignment
+        void define(const std::string& name, literaltypes&& value);
 
+        // Assign an exisiting variable a new value
+        // RuntimeError reported if variable doesn't exist
+        void assign(const Token& name, literaltypes&& value);
+
+        // Returns the value of a variable 
+        // RuntimeError is reported if argument is an undefined variable  
         literaltypes get(const Token& name);
 };
 

@@ -10,6 +10,8 @@
 #include "Token.hpp"
 #include "Parser.hpp"
 
+//TODO:
+// Update parser constructor argument to scanTokens() for compiler RVO
   void Lox::runFile(const std::string& file) 
   {
     std::ifstream input_file{file, std::ios::binary | std::ios::in};

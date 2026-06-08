@@ -23,7 +23,7 @@ class Parser {
     
     public:
 
-        Parser(const std::vector<Token>&& tokens);
+        Parser(std::vector<Token>&& tokens);
 
         std::vector<std::unique_ptr<Stmt>> parse();
 
@@ -40,6 +40,8 @@ class Parser {
         std::unique_ptr<PrintStmt> printStatement();
 
         // These functions return an AST for a given expression 
+        std::unique_ptr<Expr> assignment();
+        
         std::unique_ptr<Expr> expression();
 
         std::unique_ptr<Expr> equality();

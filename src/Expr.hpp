@@ -1,6 +1,7 @@
 #pragma once
 #include "Token.hpp"
 #include <memory>
+#include <utility>
 
 
 // Forward declarations
@@ -9,6 +10,7 @@ struct Literal;
 struct Grouping;
 struct Unary;
 struct Variable;
+struct Assignment;
 
 struct Visitor {
 
@@ -17,6 +19,7 @@ struct Visitor {
     virtual void visit(Grouping& expr) = 0;
     virtual void visit(Unary& expr) = 0;
     virtual void visit(Variable& expr) = 0;
+    virtual void visit(Assignment& expr) = 0;
 
 };
 
@@ -91,11 +94,25 @@ struct Unary : public Expr {
 
 struct Variable : public Expr {
 
-    const Token name;
+    Token name;
 
     Variable(Token&& name) : name{std::move(name)} {}
 
     void accept(Visitor& v) override {
         v.visit(*this);
      }
+};
+
+struct Assignment : public Expr {
+
+    const Token name; // name of variable being assigned to
+    std::unique_ptr<Expr> value;
+
+    Assignment(Token&& name, std::unique_ptr<Expr> value) 
+              : name{std::move(name)}, 
+                value{std::move(value)} {} 
+
+    void accept(Visitor& v) override {
+        v.visit(*this);
+    }
 };

@@ -14,7 +14,8 @@
 void Interpreter::interpret(std::vector<std::unique_ptr<Stmt>>& statements) {
     try {
         for (const auto& statement : statements) {
-            execute(*statement);
+            if (statement != nullptr)
+                execute(*statement);
         } 
     } catch (const RuntimeError& e) {
         Lox::runtimeError(e);
@@ -45,8 +46,12 @@ void Interpreter::visit(ExpressionStmt& stmt) {
 
 // Methods for evaluating Expressions //
 
+void Interpreter::visit(Assignment& expr) {
+    value = evaluate(*expr.value);
+    environment.assign(expr.name, std::move(value));
+}
 
-void Interpreter::visit(Binary &expr) {
+void Interpreter::visit(Binary& expr) {
 
     auto lhs = evaluate(*expr.left.get());
     auto rhs = evaluate(*expr.right.get());

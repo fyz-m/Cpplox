@@ -3,12 +3,14 @@
 #include "Lox.hpp"
 #include "Stmt.hpp"
 #include "Token.hpp"
+#include <cerrno>
 #include <memory>
 #include <utility>
 #include <variant>
 #include <vector>
 
-Parser::Parser(const std::vector<Token>&& tokens)
+
+Parser::Parser(std::vector<Token>&& tokens)
        : tokens{std::move(tokens)} 
        {}
 
@@ -74,9 +76,28 @@ std::unique_ptr<PrintStmt> Parser::printStatement() {
 
 
 std::unique_ptr<Expr> Parser::expression() {
-    return equality();
+    return assignment();
 }
 
+std::unique_ptr<Expr> Parser::assignment() {
+
+    // Variable being assigned is parsed as an expression
+    auto expr = equality();
+    
+    if (match({TokenType::EQUAL})) {
+        auto equal = std::move(previous());
+        auto value = assignment();
+
+        if (auto var = dynamic_cast<Variable*>(expr.get())) {
+            return std::make_unique<Assignment>(std::move(var->name), std::move(value));
+        }
+
+        // If receiver of assignment is not a variable
+        error(equal, "Invalid assignment target"); 
+    }   
+
+    return expr;
+}
 std::unique_ptr<Expr> Parser::equality() {
     
     // Left child node of the binary AST node
@@ -141,7 +162,7 @@ std::unique_ptr<Expr> Parser::factor() {
                                  })) {
 
           Token operator_ = std::move(previous()); 
-          auto right = term(); // right child node
+          auto right = unary(); // right child node
           expr = std::make_unique<Binary>(std::move(expr), std::move(operator_), std::move(right));                             
     }
     
