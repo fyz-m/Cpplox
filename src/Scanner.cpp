@@ -1,6 +1,7 @@
 #include "Scanner.hpp"
 #include "Token.hpp"
 #include <cctype>
+#include <string>
 #include <variant>
 #include "Lox.hpp"
 
@@ -71,6 +72,7 @@ void Scanner::scanToken()
         {
           addToken(TokenType::SLASH);
         }
+        break;
       }
       
       case ' ':
@@ -172,7 +174,7 @@ void Scanner::string()
   // Consume closing "
   advance();
 
-  std::string str_literal = Source.substr(start+1, (current - start - 1));
+  std::string str_literal = Source.substr(start+1, (current - start - 2));
   addToken(TokenType::STRING, std::move(str_literal));
 }
 
@@ -190,7 +192,7 @@ void Scanner::number()
           advance();
   } 
 
-  addToken(TokenType::NUMBER, std::stof(Source.substr(start, current - start)));
+  addToken(TokenType::NUMBER, std::stod(Source.substr(start, current - start)));
 }
 
 void Scanner::identifier()

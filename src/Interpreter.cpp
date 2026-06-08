@@ -128,7 +128,7 @@ void Interpreter::visit(Literal& expr) {
 }
 
 void Interpreter::visit(Grouping& expr) {
-    evaluate(expr);
+    evaluate(*expr.expression);
 }
 
 void Interpreter::visit(Unary& expr) {
@@ -145,7 +145,7 @@ void Interpreter::visit(Unary& expr) {
           break; }
 
         case TokenType::BANG:
-          value = isTruthy(rhs);
+          value = !isTruthy(rhs);
 
         default: break;
         // error
