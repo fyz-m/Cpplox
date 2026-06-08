@@ -24,4 +24,5 @@ add_executable(cpplox src/main.cpp
                       src/Enviroment.cpp                                        
 )
 
-target_compile_options(cpplox  PRIVATE -Wall -Wextra -Wpedantic  -g3 -O0 )
+target_compile_options(cpplox  PRIVATE -Wall -Wextra -Wpedantic  -g3 -O0 -fsanitize=address)
+target_link_options(cpplox PRIVATE -fsanitize=address)
