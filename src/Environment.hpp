@@ -1,14 +1,23 @@
 #pragma  once
 #include "Token.hpp"
 #include <unordered_map>
-// We can std::move into map instead of copying
-class Enviroment {
+
+class Environment {
 
     private:
 
         std::unordered_map<std::string , literaltypes> Map;
+        
+        Environment* enclosingEnv {nullptr};
     
     public:
+
+        Environment(const Environment&) = delete;
+
+        Environment(Environment& enclosing) : enclosingEnv(&enclosing) {}
+
+        // Ensure only one global environment exists
+        static Environment& getGlobal();
 
         // Define a new variable, allows reassignment
         void define(const std::string& name, literaltypes&& value);
@@ -19,6 +28,10 @@ class Enviroment {
 
         // Returns the value of a variable 
         // RuntimeError is reported if argument is an undefined variable  
-        literaltypes get(const Token& name);
+        literaltypes get(const Token& name) const;
+
+    private:
+
+        Environment() {};
 };
 
