@@ -56,6 +56,8 @@ class Parser {
 
         std::unique_ptr<Expr> primary();
 
+        // Return a vector of statements enlosed in curly braces
+        std::vector<std::unique_ptr<Stmt>> block();
 
         // Returns true if current token is equal to arg type
         bool check(TokenType expected_type);

@@ -2,17 +2,20 @@
 #include "Expr.hpp"
 #include "Token.hpp"
 #include <memory>
+#include <vector>
 
 // Forward declarations
 struct PrintStmt;
 struct ExpressionStmt;
 struct VarDeclarationStmt;
+struct BlockStmt;
 
 // Interface for functions to act on a statement node
 struct StmtVisitor {
     virtual void visit(PrintStmt& stmt) = 0;
     virtual void visit(ExpressionStmt& stmt) = 0;
     virtual void visit(VarDeclarationStmt& stmt) = 0;
+    virtual void visit(BlockStmt& stmt) = 0;
 };
 
 struct Stmt {
@@ -55,6 +58,18 @@ struct VarDeclarationStmt : public Stmt {
                       : initializer{std::move(initializer)},
                         var_name{std::move(var_name)}
                       {}
+
+    void accept(StmtVisitor& v) override {
+        v.visit(*this);
+    }
+};
+
+struct BlockStmt : public Stmt {
+
+    const std::vector<std::unique_ptr<Stmt>> statements;
+
+    BlockStmt(std::vector<std::unique_ptr<Stmt>> statements)
+             : statements{std::move(statements)} {}
 
     void accept(StmtVisitor& v) override {
         v.visit(*this);

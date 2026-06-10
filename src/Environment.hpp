@@ -6,17 +6,17 @@ class Environment {
 
     private:
 
-        std::unordered_map<std::string , literaltypes> Map;
+        std::unordered_map<std::string, literaltypes> Map;
         
-        Environment* enclosingEnv {nullptr};
+        Environment* enclosingEnv;
     
     public:
 
         Environment(const Environment&) = delete;
 
-        Environment(Environment& enclosing) : enclosingEnv(&enclosing) {}
+        Environment(Environment* enclosing) : enclosingEnv(enclosing) {}
 
-        // Ensure only one global environment exists
+        // Return reference to the global enviroment 
         static Environment& getGlobal();
 
         // Define a new variable, allows reassignment
