@@ -9,7 +9,7 @@
 #include <string>
 #include <variant>
 #include <vector>
-#include "Enviroment.hpp"
+#include "Environment.hpp"
 
 void Interpreter::interpret(std::vector<std::unique_ptr<Stmt>>& statements) {
     try {
@@ -36,19 +36,23 @@ void Interpreter::visit(VarDeclarationStmt& stmt) {
     if(stmt.initializer != nullptr)
          val = evaluate(*stmt.initializer);
     
-    environment.define(stmt.var_name.lexeme, std::move(val));
+    environment->define(stmt.var_name.lexeme, std::move(val));
 }
 
 void Interpreter::visit(ExpressionStmt& stmt) {
     evaluate(*stmt.expression);
 }
 
-
+void Interpreter::visit(BlockStmt& stmt) {
+    // Current environment becomes the enclosing env for the blockEnv
+    auto blockEnv = std::make_unique<Environment>(this->environment);
+    executeBlock(stmt.statements, *blockEnv);
+}
 // Methods for evaluating Expressions //
 
 void Interpreter::visit(Assignment& expr) {
     value = evaluate(*expr.value);
-    environment.assign(expr.name, std::move(value));
+    environment->assign(expr.name, std::move(value));
 }
 
 void Interpreter::visit(Binary& expr) {
@@ -153,7 +157,7 @@ void Interpreter::visit(Unary& expr) {
 }
 
 void Interpreter::visit(Variable& expr) {
-    this->value = environment.get(expr.name);
+    this->value = environment->get(expr.name);
 }
 
 literaltypes Interpreter::evaluate(Expr& expr) {
@@ -163,7 +167,18 @@ literaltypes Interpreter::evaluate(Expr& expr) {
 
 void Interpreter::execute(Stmt& statement) {
     statement.accept(*this);
-} 
+}
+
+void Interpreter::executeBlock(const std::vector<std::unique_ptr<Stmt>>& statements, Environment& newEnvironment) {
+
+    // Ensure previous enviroment is restored in case exception is thrown 
+    envGuard guard(*this, this->environment);
+    this->environment = &newEnvironment;
+
+    for (auto const& stmt : statements) {
+        stmt->accept(*this);
+    }
+}
 
 bool Interpreter::isTruthy(literaltypes& val) {
     // if value is null

@@ -2,21 +2,28 @@
 #include "Expr.hpp"
 #include "Stmt.hpp"
 #include "Token.hpp"
+#include <memory>
 #include <stdexcept>
 #include <vector>
-#include "Enviroment.hpp"
+#include "Environment.hpp"
+
+struct envGuard;
 
 class Interpreter : public Visitor, public StmtVisitor {
+
+    friend envGuard;  
 
     private:
 
         // Since visit methods return void, the result of an expression
         // evaluation is stored in this member
         literaltypes value;
-        Enviroment environment;
+
+        const Environment& globalEnvironment = Environment::getGlobal();
+        Environment* environment = &Environment::getGlobal();
 
     public:
-
+        
         // Interpreter API 
         void interpret(std::vector<std::unique_ptr<Stmt>>& statements);
 
@@ -24,6 +31,7 @@ class Interpreter : public Visitor, public StmtVisitor {
         void visit(PrintStmt& stmt);
         void visit(ExpressionStmt& stmt);
         void visit(VarDeclarationStmt& stmt);
+        void visit(BlockStmt& stmt);
 
         // Expression node visitor implementation
         void visit(Binary& expr); 
@@ -38,6 +46,8 @@ class Interpreter : public Visitor, public StmtVisitor {
         // Execute a statement
         void execute(Stmt& statement);
 
+        void executeBlock(const std::vector<std::unique_ptr<Stmt>>& statements, Environment& newEnvironment);
+
         // Evaluate an expression and return the result
         literaltypes evaluate(Expr& expr);
  
@@ -50,7 +60,7 @@ class Interpreter : public Visitor, public StmtVisitor {
 
         void checkifOperandsAreNumber(const Token& operator_, const literaltypes& left, const literaltypes& right);
 
-        // Convert a literal into string  
+        // Convert a Lox literal into string  
         std::string stringify(literaltypes& value);
 };
 
@@ -61,5 +71,20 @@ class RuntimeError : public std::runtime_error {
     const Token& token;
     RuntimeError(const Token& token, const std::string& Message)
                 : std::runtime_error(Message), token{token} {}
+
+};
+
+
+// This ensures that the enviroment is restored 
+struct envGuard {
+       Interpreter& interpreter;
+       Environment* previousEnv;
+
+       envGuard(Interpreter& interpreter, Environment* previousEnv)
+               : interpreter{interpreter}, previousEnv{previousEnv} {}
+
+       ~envGuard() {
+            interpreter.environment = previousEnv;
+       }
 
 };
