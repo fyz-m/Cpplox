@@ -27,21 +27,21 @@ class Interpreter : public Visitor, public StmtVisitor {
         // Interpreter API 
         void interpret(std::vector<std::unique_ptr<Stmt>>& statements);
 
+    private:
+
         // Statement node visitor implementation
         void visit(PrintStmt& stmt);
         void visit(ExpressionStmt& stmt);
         void visit(VarDeclarationStmt& stmt);
         void visit(BlockStmt& stmt);
-
+        void visit(ifStmt& stmt);
         // Expression node visitor implementation
         void visit(Binary& expr); 
         void visit(Literal& expr);
         void visit(Grouping& expr);
         void visit(Unary& expr);
         void visit(Variable& expr);
-        void visit(Assignment& expr);
-
-    private: 
+        void visit(Assignment& expr); 
 
         // Execute a statement
         void execute(Stmt& statement);
@@ -76,6 +76,7 @@ class RuntimeError : public std::runtime_error {
 
 
 // This ensures that the enviroment is restored 
+// when an exception is thrown  
 struct envGuard {
        Interpreter& interpreter;
        Environment* previousEnv;

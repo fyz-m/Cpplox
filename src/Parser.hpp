@@ -29,6 +29,8 @@ class Parser {
 
     private:
 
+        // These functions return an AST for a given statement
+        //
         std::unique_ptr<Stmt> declaration();
 
         std::unique_ptr<VarDeclarationStmt> varDeclaration();
@@ -38,6 +40,8 @@ class Parser {
         std::unique_ptr<ExpressionStmt> expressionStatement();
 
         std::unique_ptr<PrintStmt> printStatement();
+        
+        std::unique_ptr<ifStmt> ifStatement();
 
         // These functions return an AST for a given expression 
         std::unique_ptr<Expr> assignment();

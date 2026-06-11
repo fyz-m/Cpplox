@@ -56,7 +56,8 @@ std::unique_ptr<VarDeclarationStmt> Parser::varDeclaration() {
 std::unique_ptr<Stmt> Parser::statement() {
 
     if(match({TokenType::PRINT})) return printStatement();
-
+    if(match({TokenType::IF})) return ifStatement();
+    
     return expressionStatement();
 }
 
@@ -76,7 +77,7 @@ std::vector<std::unique_ptr<Stmt>> Parser::block() {
         statements.push_back(declaration());
     }
 
-    consume(TokenType::RIGHT_BRACE, "Expect '}' after block.");
+    consume(TokenType::RIGHT_BRACE, "Expect closing '}'.");
     return statements;
 }
 
@@ -88,6 +89,20 @@ std::unique_ptr<PrintStmt> Parser::printStatement() {
     return std::make_unique<PrintStmt>(std::move(value));
 }
 
+std::unique_ptr<ifStmt> Parser::ifStatement() {
+
+    auto condition = expression();
+    consume(TokenType::LEFT_BRACE, "Expect '{' after 'if' condition.");
+
+    auto thenBranch = std::make_unique<BlockStmt>(block());
+
+    std::unique_ptr<BlockStmt> elseBranch = nullptr;
+    if (match({TokenType::ELSE})) {
+        consume(TokenType::LEFT_BRACE, "Expect '{' after 'else'.");
+        elseBranch = std::make_unique<BlockStmt>(block());
+    }
+    return std::make_unique<ifStmt>(std::move(condition), std::move(thenBranch), std::move(elseBranch));
+};
 
 std::unique_ptr<Expr> Parser::expression() {
     return assignment();
@@ -112,6 +127,7 @@ std::unique_ptr<Expr> Parser::assignment() {
 
     return expr;
 }
+
 std::unique_ptr<Expr> Parser::equality() {
     
     // Left child node of the binary AST node

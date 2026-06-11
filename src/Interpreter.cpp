@@ -43,6 +43,18 @@ void Interpreter::visit(ExpressionStmt& stmt) {
     evaluate(*stmt.expression);
 }
 
+void Interpreter::visit(ifStmt& stmt) {
+    
+    value = evaluate(*stmt.condition);
+
+    if (isTruthy(value)) {
+        execute(*stmt.trueBranch);
+    }
+    else if (stmt.falseBranch != nullptr) {
+        execute(*stmt.falseBranch);
+    } 
+};
+
 void Interpreter::visit(BlockStmt& stmt) {
     // Current environment becomes the enclosing env for the blockEnv
     auto blockEnv = std::make_unique<Environment>(this->environment);
