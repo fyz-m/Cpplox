@@ -102,7 +102,7 @@ std::unique_ptr<ifStmt> Parser::ifStatement() {
         elseBranch = std::make_unique<BlockStmt>(block());
     }
     return std::make_unique<ifStmt>(std::move(condition), std::move(thenBranch), std::move(elseBranch));
-};
+}
 
 std::unique_ptr<Expr> Parser::expression() {
     return assignment();
@@ -111,7 +111,7 @@ std::unique_ptr<Expr> Parser::expression() {
 std::unique_ptr<Expr> Parser::assignment() {
 
     // Variable being assigned is parsed as an expression
-    auto expr = equality();
+    auto expr = logicalOr();
     
     if (match({TokenType::EQUAL})) {
         auto equal = std::move(previous());
@@ -125,6 +125,30 @@ std::unique_ptr<Expr> Parser::assignment() {
         error(equal, "Invalid assignment target"); 
     }   
 
+    return expr;
+}
+
+std::unique_ptr<Expr> Parser::logicalOr() {
+
+    auto expr = logicalAnd();
+
+    if (match({TokenType::OR})) {
+        auto rhs = logicalAnd();
+        Token& operator_ = previous();
+        return std::make_unique<Logical>(std::move(expr), std::move(operator_), std::move(rhs));
+    }
+    return expr;
+}
+
+std::unique_ptr<Expr> Parser::logicalAnd() {
+    
+    auto expr = equality();
+
+    if (match({TokenType::AND})) {
+        auto rhs = equality();
+        Token& operator_ = previous();
+        return std::make_unique<Logical>(std::move(expr), std::move(operator_), std::move(rhs));
+    }
     return expr;
 }
 

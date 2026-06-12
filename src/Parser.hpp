@@ -43,10 +43,15 @@ class Parser {
         
         std::unique_ptr<ifStmt> ifStatement();
 
-        // These functions return an AST for a given expression 
-        std::unique_ptr<Expr> assignment();
-        
+        // These functions return an AST for a given expression
+        // Ordered from lowest -> highest precedence  
         std::unique_ptr<Expr> expression();
+                
+        std::unique_ptr<Expr> assignment();
+
+        std::unique_ptr<Expr> logicalOr();
+
+        std::unique_ptr<Expr> logicalAnd();
 
         std::unique_ptr<Expr> equality();
 
