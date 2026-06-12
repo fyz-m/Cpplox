@@ -133,8 +133,8 @@ std::unique_ptr<Expr> Parser::logicalOr() {
     auto expr = logicalAnd();
 
     if (match({TokenType::OR})) {
-        auto rhs = logicalAnd();
         Token& operator_ = previous();
+        auto rhs = logicalAnd();
         return std::make_unique<Logical>(std::move(expr), std::move(operator_), std::move(rhs));
     }
     return expr;
@@ -145,8 +145,8 @@ std::unique_ptr<Expr> Parser::logicalAnd() {
     auto expr = equality();
 
     if (match({TokenType::AND})) {
-        auto rhs = equality();
         Token& operator_ = previous();
+        auto rhs = equality();
         return std::make_unique<Logical>(std::move(expr), std::move(operator_), std::move(rhs));
     }
     return expr;
