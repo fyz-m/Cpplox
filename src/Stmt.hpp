@@ -83,12 +83,12 @@ struct BlockStmt : public Stmt {
 struct ifStmt : public Stmt {
 
     std::unique_ptr<Expr> condition;
-    std::unique_ptr<BlockStmt> trueBranch;  
-    std::unique_ptr<BlockStmt> falseBranch;
+    std::unique_ptr<Stmt> trueBranch;  
+    std::unique_ptr<Stmt> falseBranch;
 
     ifStmt(std::unique_ptr<Expr> condition,
-           std::unique_ptr<BlockStmt> trueBranch,  
-           std::unique_ptr<BlockStmt> falseBranch)
+           std::unique_ptr<Stmt> trueBranch,  
+           std::unique_ptr<Stmt> falseBranch)
            : condition{std::move(condition)},
              trueBranch{std::move(trueBranch)},
              falseBranch{std::move(falseBranch)}  {}
@@ -100,10 +100,10 @@ struct ifStmt : public Stmt {
 struct whileStmt : public Stmt {
 
     std::unique_ptr<Expr> condition;
-    std::unique_ptr<BlockStmt> bodyStatements;  
+    std::unique_ptr<Stmt> bodyStatements;  
     
     whileStmt(std::unique_ptr<Expr> condition,
-           std::unique_ptr<BlockStmt> bodyStatements)
+           std::unique_ptr<Stmt> bodyStatements)
            : condition{std::move(condition)},
              bodyStatements{std::move(bodyStatements)} 
              {}

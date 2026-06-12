@@ -29,8 +29,6 @@ std::unique_ptr<Stmt> Parser::declaration() {
     try { 
         if (match({TokenType::VAR})) 
             return varDeclaration();
-        if (match({TokenType::LEFT_BRACE}))
-            return std::make_unique<BlockStmt>(block());
 
         return statement();
 
@@ -58,6 +56,9 @@ std::unique_ptr<Stmt> Parser::statement() {
     if(match({TokenType::PRINT})) return printStatement();
     if(match({TokenType::IF})) return ifStatement();
     if(match({TokenType::WHILE})) return whileStatement();
+    // if(match({TokenType::FOR})) return forStatement();
+    if (match({TokenType::LEFT_BRACE}))
+        return std::make_unique<BlockStmt>(block());
     
     return expressionStatement();
 }
@@ -92,25 +93,27 @@ std::unique_ptr<PrintStmt> Parser::printStatement() {
 
 std::unique_ptr<ifStmt> Parser::ifStatement() {
 
+    consume(TokenType::LEFT_PAREN, "Expect '(' after 'if'.");
     auto condition = expression();
-    consume(TokenType::LEFT_BRACE, "Expect '{' after 'if' condition.");
+    consume(TokenType::RIGHT_PAREN, "Expect closing ')'.");
 
-    auto thenBranch = std::make_unique<BlockStmt>(block());
+    auto thenBranch = statement();
 
-    std::unique_ptr<BlockStmt> elseBranch = nullptr;
+    std::unique_ptr<Stmt> elseBranch = nullptr;
     if (match({TokenType::ELSE})) {
-        consume(TokenType::LEFT_BRACE, "Expect '{' after 'else'.");
-        elseBranch = std::make_unique<BlockStmt>(block());
+        elseBranch = statement();
     }
     return std::make_unique<ifStmt>(std::move(condition), std::move(thenBranch), std::move(elseBranch));
 }
 
 std::unique_ptr<whileStmt> Parser::whileStatement() {
 
+    consume(TokenType::LEFT_PAREN, "Expect '(' after 'while'.");
     auto condition = expression();
-    consume(TokenType::LEFT_BRACE, "Expect '{' after 'while'.");
-    auto bodyStatements = std::make_unique<BlockStmt>(block());
+    consume(TokenType::RIGHT_PAREN, "Expect closing ')'.");
 
+    auto bodyStatements = statement();
+    
     return std::make_unique<whileStmt>(std::move(condition), std::move(bodyStatements));
 }
 
