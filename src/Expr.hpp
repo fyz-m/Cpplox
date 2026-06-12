@@ -11,6 +11,7 @@ struct Grouping;
 struct Unary;
 struct Variable;
 struct Assignment;
+struct Logical;
 
 struct Visitor {
 
@@ -20,6 +21,7 @@ struct Visitor {
     virtual void visit(Unary& expr) = 0;
     virtual void visit(Variable& expr) = 0;
     virtual void visit(Assignment& expr) = 0;
+    virtual void visit(Logical& expr) = 0;
 
 };
 
@@ -115,4 +117,23 @@ struct Assignment : public Expr {
     void accept(Visitor& v) override {
         v.visit(*this);
     }
+};
+
+struct Logical : public Expr {
+
+     std::unique_ptr<Expr> left;
+     const Token           operator_;
+     std::unique_ptr<Expr> right;
+
+    Logical(std::unique_ptr<Expr> left, 
+           Token&& operator_,
+           std::unique_ptr<Expr> right)
+           : left{std::move(left)}, 
+             operator_{std::move(operator_)}, 
+             right{std::move(right)}
+           {}
+    
+     void accept(Visitor& v) override {
+        v.visit(*this);
+     }
 };
