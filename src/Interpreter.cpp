@@ -143,6 +143,22 @@ void Interpreter::visit(Literal& expr) {
     value = expr.value;
 }
 
+void Interpreter::visit(Logical& expr) {
+    auto lhs = evaluate(*expr.left);
+
+    if (expr.operator_.type == TokenType::OR) {
+       if (isTruthy(lhs)) {
+          value = lhs; return; 
+       }
+    }
+    // TokenType == AND
+    else if (!isTruthy(lhs)) { 
+        value = lhs; return;
+    }
+    value = evaluate(*expr.right); 
+    return;
+};
+
 void Interpreter::visit(Grouping& expr) {
     evaluate(*expr.expression);
 }
