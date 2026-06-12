@@ -10,6 +10,7 @@ struct ExpressionStmt;
 struct VarDeclarationStmt;
 struct BlockStmt;
 struct ifStmt;
+struct whileStmt;
 
 // Interface for functions to act on a statement node
 struct StmtVisitor {
@@ -18,6 +19,7 @@ struct StmtVisitor {
     virtual void visit(VarDeclarationStmt& stmt) = 0;
     virtual void visit(BlockStmt& stmt) = 0;
     virtual void visit(ifStmt& stmt) = 0;
+    virtual void visit(whileStmt& stmt) = 0;
 };
 
 struct Stmt {
@@ -90,6 +92,21 @@ struct ifStmt : public Stmt {
            : condition{std::move(condition)},
              trueBranch{std::move(trueBranch)},
              falseBranch{std::move(falseBranch)}  {}
+
+    void accept(StmtVisitor& v) override {
+        v.visit(*this);
+    }
+};
+struct whileStmt : public Stmt {
+
+    std::unique_ptr<Expr> condition;
+    std::unique_ptr<BlockStmt> bodyStatements;  
+    
+    whileStmt(std::unique_ptr<Expr> condition,
+           std::unique_ptr<BlockStmt> bodyStatements)
+           : condition{std::move(condition)},
+             bodyStatements{std::move(bodyStatements)} 
+             {}
 
     void accept(StmtVisitor& v) override {
         v.visit(*this);

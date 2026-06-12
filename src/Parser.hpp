@@ -43,6 +43,8 @@ class Parser {
         
         std::unique_ptr<ifStmt> ifStatement();
 
+        std::unique_ptr<whileStmt> whileStatement();
+
         // These functions return an AST for a given expression
         // Ordered from lowest -> highest precedence  
         std::unique_ptr<Expr> expression();

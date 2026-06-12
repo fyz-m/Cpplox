@@ -35,6 +35,7 @@ class Interpreter : public Visitor, public StmtVisitor {
         void visit(VarDeclarationStmt& stmt);
         void visit(BlockStmt& stmt);
         void visit(ifStmt& stmt);
+        void visit(whileStmt& stmt);
 
         // Expression node visitor implementation
         void visit(Binary& expr); 

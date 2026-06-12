@@ -57,6 +57,7 @@ std::unique_ptr<Stmt> Parser::statement() {
 
     if(match({TokenType::PRINT})) return printStatement();
     if(match({TokenType::IF})) return ifStatement();
+    if(match({TokenType::WHILE})) return whileStatement();
     
     return expressionStatement();
 }
@@ -102,6 +103,15 @@ std::unique_ptr<ifStmt> Parser::ifStatement() {
         elseBranch = std::make_unique<BlockStmt>(block());
     }
     return std::make_unique<ifStmt>(std::move(condition), std::move(thenBranch), std::move(elseBranch));
+}
+
+std::unique_ptr<whileStmt> Parser::whileStatement() {
+
+    auto condition = expression();
+    consume(TokenType::LEFT_BRACE, "Expect '{' after 'while'.");
+    auto bodyStatements = std::make_unique<BlockStmt>(block());
+
+    return std::make_unique<whileStmt>(std::move(condition), std::move(bodyStatements));
 }
 
 std::unique_ptr<Expr> Parser::expression() {
