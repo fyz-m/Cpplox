@@ -72,7 +72,7 @@ struct BlockStmt : public Stmt {
 
     const std::vector<std::unique_ptr<Stmt>> statements;
 
-    BlockStmt(std::vector<std::unique_ptr<Stmt>> statements)
+    BlockStmt(std::vector<std::unique_ptr<Stmt>>&& statements)
              : statements{std::move(statements)} {}
 
     void accept(StmtVisitor& v) override {
