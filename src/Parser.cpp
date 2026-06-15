@@ -4,6 +4,8 @@
 #include "Stmt.hpp"
 #include "Token.hpp"
 #include <cerrno>
+#include <cstddef>
+#include <ctime>
 #include <memory>
 #include <utility>
 #include <variant>
@@ -53,14 +55,77 @@ std::unique_ptr<VarDeclarationStmt> Parser::varDeclaration() {
 
 std::unique_ptr<Stmt> Parser::statement() {
 
-    if(match({TokenType::PRINT})) return printStatement();
-    if(match({TokenType::IF})) return ifStatement();
-    if(match({TokenType::WHILE})) return whileStatement();
-    // if(match({TokenType::FOR})) return forStatement();
+    if(match({TokenType::PRINT}))   return printStatement();
+    if(match({TokenType::IF}))      return ifStatement();
+    if(match({TokenType::WHILE}))   return whileStatement();
+    if(match({TokenType::FOR}))     return forStatement();
     if (match({TokenType::LEFT_BRACE}))
         return std::make_unique<BlockStmt>(block());
     
     return expressionStatement();
+}
+
+std::unique_ptr<Stmt> Parser::forStatement() {
+
+    consume(TokenType::LEFT_PAREN, "Expect '(' after 'for'.");
+
+    std::unique_ptr<Stmt> initializer;
+    if (match({TokenType::SEMICOLON})) 
+        initializer = nullptr;
+    else if (match({TokenType::VAR})) 
+        initializer = varDeclaration();
+    else 
+        initializer = expressionStatement();
+
+    std::unique_ptr<Expr> condition {nullptr};
+    if (!check(TokenType::SEMICOLON))
+        condition = expression();
+    consume(TokenType::SEMICOLON, "Expect ';' after for-loop condition.");
+
+
+    std::unique_ptr<Expr> increment {nullptr};
+    if (!check(TokenType::RIGHT_PAREN))
+        increment = expression();
+    consume(TokenType::RIGHT_PAREN, "Expect ')' after for-loop clauses.");
+
+    auto body = statement();
+
+    // Convert the for-loop into a while-loop:
+    // it becomes a blockStmt node where the first statement (in the vector of stmts)
+    // is the initializer and the second statement is a whileStmt.
+    // The condition of the for-loop becomes the condition of the whileStmt
+    // and the body of the for-loop + incrementExpr becomes the body of the whileStmt
+
+    // blockStmt:
+    // initializer
+    // while (condition) {
+    //     statement;
+    //     increment;
+    // }
+
+    if (increment != nullptr) {
+        std::vector<std::unique_ptr<Stmt>> v(2);
+        v[0] = std::move(body);
+        // Convert increment into a stmt node so we can make a blockStmt 
+        v[1] = std::make_unique<ExpressionStmt>(std::move(increment));
+
+        // This becomes the body of the while loop
+        body = std::make_unique<BlockStmt>(std::move(v));
+    } 
+
+    // If condition omitted it gets set to true
+    if (condition == nullptr) condition = std::make_unique<Literal>(true); 
+
+    body = std::make_unique<whileStmt>(std::move(condition), std::move(body));    
+
+    if (initializer != nullptr) {
+        std::vector<std::unique_ptr<Stmt>> v;
+        v.push_back(std::move(initializer));
+        v.push_back(std::move(body));
+        body = std::make_unique<BlockStmt>(std::move(v));
+    }
+        
+    return body;
 }
 
 std::unique_ptr<ExpressionStmt> Parser::expressionStatement() {
@@ -113,7 +178,7 @@ std::unique_ptr<whileStmt> Parser::whileStatement() {
     consume(TokenType::RIGHT_PAREN, "Expect closing ')'.");
 
     auto bodyStatements = statement();
-    
+
     return std::make_unique<whileStmt>(std::move(condition), std::move(bodyStatements));
 }
 
