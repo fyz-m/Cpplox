@@ -11,6 +11,7 @@ struct VarDeclarationStmt;
 struct BlockStmt;
 struct ifStmt;
 struct whileStmt;
+struct breakStmt;
 
 // Interface for functions to act on a statement node
 struct StmtVisitor {
@@ -20,6 +21,7 @@ struct StmtVisitor {
     virtual void visit(BlockStmt& stmt) = 0;
     virtual void visit(ifStmt& stmt) = 0;
     virtual void visit(whileStmt& stmt) = 0;
+    virtual void visit(breakStmt& stmt) = 0;
 };
 
 struct Stmt {
@@ -111,4 +113,12 @@ struct whileStmt : public Stmt {
     void accept(StmtVisitor& v) override {
         v.visit(*this);
     }
+};
+
+struct breakStmt : public Stmt {
+
+    void accept(StmtVisitor& v) override {
+        v.visit(*this);
+    }
+
 };
