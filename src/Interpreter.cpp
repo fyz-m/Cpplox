@@ -57,10 +57,18 @@ void Interpreter::visit(ifStmt& stmt) {
 
 void Interpreter::visit(whileStmt& stmt) {
     auto condition = evaluate(*stmt.condition);
-    while (isTruthy(condition)) {
-        execute(*stmt.bodyStatements);
-        condition = evaluate(*stmt.condition); 
+    try {
+        while (isTruthy(condition)) {
+            execute(*stmt.bodyStatements); 
+            condition = evaluate(*stmt.condition); 
+        }
+    } catch ( BreakException&) {
+        return;
     }
+}
+
+void Interpreter::visit(breakStmt& stmt) {
+    throw BreakException();
 }
 
 void Interpreter::visit(BlockStmt& stmt) {
@@ -68,6 +76,7 @@ void Interpreter::visit(BlockStmt& stmt) {
     auto blockEnv = std::make_unique<Environment>(this->environment);
     executeBlock(stmt.statements, *blockEnv);
 }
+
 // Methods for evaluating Expressions //
 
 void Interpreter::visit(Assignment& expr) {

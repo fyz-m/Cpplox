@@ -2,12 +2,16 @@
 #include "Expr.hpp"
 #include "Stmt.hpp"
 #include "Token.hpp"
+#include <exception>
 #include <memory>
 #include <stdexcept>
 #include <vector>
 #include "Environment.hpp"
 
 struct envGuard;
+
+
+// It would have been better to make the visit methods return std::any instead of void
 
 class Interpreter : public Visitor, public StmtVisitor {
 
@@ -36,6 +40,7 @@ class Interpreter : public Visitor, public StmtVisitor {
         void visit(BlockStmt& stmt);
         void visit(ifStmt& stmt);
         void visit(whileStmt& stmt);
+        void visit(breakStmt& stmt);
 
         // Expression node visitor implementation
         void visit(Binary& expr); 
@@ -77,6 +82,7 @@ class RuntimeError : public std::runtime_error {
 
 };
 
+class BreakException : public std::exception {};
 
 // This ensures that the enviroment is restored 
 // when an exception is thrown  
