@@ -20,6 +20,10 @@ class Parser {
 
         // Token pointer/index 
         int current {0};
+
+        // Tracks if the parser is currently in a loop
+        // Contains pointer to loop or nullptr if not currently in a loop
+        whileStmt* enclosingLoop {nullptr};
     
     public:
 
@@ -46,6 +50,8 @@ class Parser {
         std::unique_ptr<whileStmt> whileStatement();
 
         std::unique_ptr<Stmt> forStatement();
+
+        std::unique_ptr<breakStmt> breakStatement();
 
         // These functions return an AST for a given expression
         // Ordered from lowest -> highest precedence  

@@ -55,10 +55,12 @@ std::unique_ptr<VarDeclarationStmt> Parser::varDeclaration() {
 
 std::unique_ptr<Stmt> Parser::statement() {
 
-    if(match({TokenType::PRINT}))   return printStatement();
-    if(match({TokenType::IF}))      return ifStatement();
-    if(match({TokenType::WHILE}))   return whileStatement();
-    if(match({TokenType::FOR}))     return forStatement();
+    if (match({TokenType::PRINT}))   return printStatement();
+    if (match({TokenType::IF}))      return ifStatement();
+    if (match({TokenType::WHILE}))   return whileStatement();
+    if (match({TokenType::FOR}))     return forStatement();
+    if (match({TokenType::BREAK}))   return breakStatement();
+
     if (match({TokenType::LEFT_BRACE}))
         return std::make_unique<BlockStmt>(block());
     
@@ -77,9 +79,9 @@ std::unique_ptr<Stmt> Parser::forStatement() {
     else 
         initializer = expressionStatement();
 
-    std::unique_ptr<Expr> condition {nullptr};
+    std::unique_ptr<Expr> for_condition {nullptr};
     if (!check(TokenType::SEMICOLON))
-        condition = expression();
+        for_condition = expression();
     consume(TokenType::SEMICOLON, "Expect ';' after for-loop condition.");
 
 
@@ -88,7 +90,14 @@ std::unique_ptr<Stmt> Parser::forStatement() {
         increment = expression();
     consume(TokenType::RIGHT_PAREN, "Expect ')' after for-loop clauses.");
 
+    // Temporarily use a whileStmt ptr so we can handle break statements in the for-loop body
+    auto whileLoop = std::make_unique<whileStmt>(nullptr, nullptr);
+    auto prevloop = enclosingLoop;
+    enclosingLoop = whileLoop.get();
+
+    // Parse for-loop body
     auto body = statement();
+    enclosingLoop = prevloop;
 
     // Convert the for-loop into a while-loop:
     // it becomes a blockStmt node where the first statement (in the vector of stmts)
@@ -110,22 +119,25 @@ std::unique_ptr<Stmt> Parser::forStatement() {
         v[1] = std::make_unique<ExpressionStmt>(std::move(increment));
 
         // This becomes the body of the while loop
+        // containing the body + increment at the end
         body = std::make_unique<BlockStmt>(std::move(v));
     } 
 
     // If condition omitted it gets set to true
-    if (condition == nullptr) condition = std::make_unique<Literal>(true); 
+    if (for_condition == nullptr) for_condition = std::make_unique<Literal>(true); 
 
-    body = std::make_unique<whileStmt>(std::move(condition), std::move(body));    
-
+    whileLoop->condition = std::move(for_condition); 
+    whileLoop->bodyStatements = std::move(body);
+    
     if (initializer != nullptr) {
         std::vector<std::unique_ptr<Stmt>> v;
         v.push_back(std::move(initializer));
-        v.push_back(std::move(body));
-        body = std::make_unique<BlockStmt>(std::move(v));
+        v.push_back(std::move(whileLoop));
+        return std::make_unique<BlockStmt>(std::move(v));
+    } else {
+        return whileLoop;
     }
         
-    return body;
 }
 
 std::unique_ptr<ExpressionStmt> Parser::expressionStatement() {
@@ -177,9 +189,30 @@ std::unique_ptr<whileStmt> Parser::whileStatement() {
     auto condition = expression();
     consume(TokenType::RIGHT_PAREN, "Expect closing ')'.");
 
-    auto bodyStatements = statement();
+    // Create node before parsing body statements because we need to set the parser's 
+    // internal state so it knows it is in a loop. This is so we can handle break
+    // statements that are not in loops (syntax error).  
+    auto whileLoop = std::make_unique<whileStmt>(std::move(condition), nullptr);
 
-    return std::make_unique<whileStmt>(std::move(condition), std::move(bodyStatements));
+    auto prevloop = enclosingLoop;
+    enclosingLoop = whileLoop.get();
+
+    whileLoop->bodyStatements = statement();
+    enclosingLoop = prevloop;
+
+    return whileLoop; 
+}
+
+std::unique_ptr<breakStmt> Parser::breakStatement() {
+
+    if (enclosingLoop == nullptr) {
+        error(previous(), "'break' must be inside a for/while loop.");
+        return nullptr;
+    }
+    consume(TokenType::SEMICOLON, "Expect ';' after 'break'.");
+
+    return std::make_unique<breakStmt>();
+
 }
 
 std::unique_ptr<Expr> Parser::expression() {
