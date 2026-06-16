@@ -6,7 +6,6 @@
 #include "Lox.hpp"
 
 
-
 Scanner::Scanner(const std::string& Source) 
         : Source{Source}  
         {

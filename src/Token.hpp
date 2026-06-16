@@ -1,6 +1,5 @@
 #pragma once
 #include <string>
-#include <unordered_map>
 #include <variant>
 
 enum class TokenType {
@@ -19,7 +18,7 @@ enum class TokenType {
 
   // Keywords.
   AND, CLASS, ELSE, FALSE, FUN, FOR, IF, NIL, OR,
-  PRINT, RETURN, SUPER, THIS, TRUE, VAR, WHILE,
+  PRINT, RETURN, SUPER, THIS, TRUE, VAR, WHILE, BREAK,
 
   _EOF
 };
@@ -54,23 +53,5 @@ class Token {
     
 };
 
-const std::unordered_map<std::string, TokenType> keywords =  
-    {
-      {"and", TokenType::AND},
-      {"class", TokenType::CLASS},
-      {"else", TokenType::ELSE},
-      {"false", TokenType::FALSE},
-      {"for", TokenType::FOR},
-      {"fun", TokenType::FUN},
-      {"if", TokenType::IF},
-      {"nil", TokenType::NIL},
-      {"or", TokenType::OR},
-      {"print", TokenType::PRINT},
-      {"return", TokenType::RETURN},
-      {"super", TokenType::SUPER},
-      {"this", TokenType::THIS},
-      {"true", TokenType::TRUE},
-      {"var", TokenType::VAR},
-      {"while", TokenType::WHILE},
-    };
+
 
