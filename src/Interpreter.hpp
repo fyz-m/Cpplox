@@ -9,13 +9,14 @@
 #include "Environment.hpp"
 
 struct envGuard;
-
+class LoxFunction;
 
 // It would have been better to make the visit methods return std::any instead of void
 
 class Interpreter : public Visitor, public StmtVisitor {
 
-    friend envGuard;  
+    friend envGuard; 
+    friend LoxFunction; 
 
     private:
 
@@ -41,6 +42,7 @@ class Interpreter : public Visitor, public StmtVisitor {
         void visit(ifStmt& stmt);
         void visit(whileStmt& stmt);
         void visit(breakStmt& stmt);
+        void visit(functionStmt& stmt);
 
         // Expression node visitor implementation
         void visit(Binary& expr); 
@@ -50,6 +52,7 @@ class Interpreter : public Visitor, public StmtVisitor {
         void visit(Variable& expr);
         void visit(Assignment& expr); 
         void visit(Logical& expr); 
+        void visit(Call& expr); 
 
         // Execute a statement
         void execute(Stmt& statement);
@@ -71,6 +74,7 @@ class Interpreter : public Visitor, public StmtVisitor {
         // Convert a Lox literal into string  
         std::string stringify(literaltypes& value);
 };
+
 
 class RuntimeError : public std::runtime_error {
     
@@ -96,5 +100,44 @@ struct envGuard {
        ~envGuard() {
             interpreter.environment = previousEnv;
        }
+
+};
+
+struct LoxCallable {
+    virtual int arity() = 0;
+    virtual void call(Interpreter& interpreter, std::vector<literaltypes>& arguments) = 0;
+};
+
+class LoxFunction : LoxCallable {
+
+    private:
+
+        const std::unique_ptr<functionStmt> declaration;
+
+    public:
+
+        LoxFunction(std::unique_ptr<functionStmt> declaration)
+                    : declaration{std::move(declaration)} {} 
+
+        void call(Interpreter& interpreter, std::vector<literaltypes>& arguments) override {
+
+            // Create a new enviroment every time the function is called
+            auto functionEnv = std::make_unique<Environment>(&Environment::getGlobal());
+            
+            // Initialize the function enviroment
+            // Add parameters as variables whose values are provided by the given arguments
+            // to the function call 
+            for (int i = 0; i < declaration->parameters.size(); i++) {
+                auto parameterName = declaration->parameters[i].lexeme;
+                auto parameterValue = arguments[i];
+                functionEnv->define(parameterName, std::move(parameterValue));
+            }
+
+           interpreter.executeBlock(declaration->bodyStatements, *functionEnv); 
+        }
+
+        int arity() override {
+            return declaration->parameters.size();
+        }
 
 };
