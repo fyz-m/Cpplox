@@ -12,6 +12,7 @@ struct BlockStmt;
 struct ifStmt;
 struct whileStmt;
 struct breakStmt;
+struct functionStmt;
 
 // Interface for functions to act on a statement node
 struct StmtVisitor {
@@ -22,6 +23,7 @@ struct StmtVisitor {
     virtual void visit(ifStmt& stmt) = 0;
     virtual void visit(whileStmt& stmt) = 0;
     virtual void visit(breakStmt& stmt) = 0;
+    virtual void visit(functionStmt& stmt) = 0;
 };
 
 struct Stmt {
@@ -121,4 +123,23 @@ struct breakStmt : public Stmt {
         v.visit(*this);
     }
 
+};
+
+struct functionStmt : public Stmt {
+
+    const Token name;
+    std::vector<std::unique_ptr<Expr>> parameters;
+    std::vector<std::unique_ptr<Stmt>> bodyStatements;
+
+    functionStmt(Token&& name,
+                 std::vector<std::unique_ptr<Expr>>&& parameters,
+                 std::vector<std::unique_ptr<Stmt>>&& bodyStatements) 
+                 : name{std::move(name)},
+                   parameters{std::move(parameters)},  
+                   bodyStatements{std::move(bodyStatements)}
+                {}
+
+     void accept(StmtVisitor &v) override {
+        v.visit(*this);
+    }
 };

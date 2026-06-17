@@ -2,6 +2,7 @@
 #include "Token.hpp"
 #include <memory>
 #include <utility>
+#include <vector>
 
 
 // Forward declarations
@@ -12,6 +13,7 @@ struct Unary;
 struct Variable;
 struct Assignment;
 struct Logical;
+struct Call;
 
 struct Visitor {
 
@@ -22,6 +24,7 @@ struct Visitor {
     virtual void visit(Variable& expr) = 0;
     virtual void visit(Assignment& expr) = 0;
     virtual void visit(Logical& expr) = 0;
+    virtual void visit(Call& expr) = 0;
 
 };
 
@@ -126,12 +129,32 @@ struct Logical : public Expr {
      std::unique_ptr<Expr> right;
 
     Logical(std::unique_ptr<Expr> left, 
-           Token&& operator_,
-           std::unique_ptr<Expr> right)
+           Token&&                operator_,
+           std::unique_ptr<Expr>  right)
            : left{std::move(left)}, 
              operator_{std::move(operator_)}, 
              right{std::move(right)}
            {}
+    
+     void accept(Visitor& v) override {
+        v.visit(*this);
+     }
+};
+
+struct Call : public Expr {
+
+     std::unique_ptr<Expr>              callee;
+     const Token                        closing_paren;
+     std::vector<std::unique_ptr<Expr>> arguments;  
+
+    Call(std::unique_ptr<Expr>              callee, 
+         Token&&                            closing_paren,
+         std::vector<std::unique_ptr<Expr>> arguments)
+
+         : callee{std::move(callee)}, 
+           closing_paren{std::move(closing_paren)}, 
+           arguments{std::move(arguments)}
+        {}
     
      void accept(Visitor& v) override {
         v.visit(*this);

@@ -37,6 +37,8 @@ class Parser {
         //
         std::unique_ptr<Stmt> declaration();
 
+        std::unique_ptr<functionStmt> function(const std::string& kind);
+
         std::unique_ptr<VarDeclarationStmt> varDeclaration();
 
         std::unique_ptr<Stmt> statement();
@@ -72,6 +74,10 @@ class Parser {
         std::unique_ptr<Expr> factor();
 
         std::unique_ptr<Expr> unary();
+
+        std::unique_ptr<Expr> functionCall();
+
+        std::unique_ptr<Call> finishCall(std::unique_ptr<Expr> expr);
 
         std::unique_ptr<Expr> primary();
 

@@ -4,7 +4,6 @@
 #include "Stmt.hpp"
 #include "Token.hpp"
 #include <cerrno>
-#include <cstddef>
 #include <ctime>
 #include <memory>
 #include <utility>
@@ -29,6 +28,8 @@ std::vector<std::unique_ptr<Stmt>> Parser::parse() {
 std::unique_ptr<Stmt> Parser::declaration() {
 
     try { 
+        if (match({TokenType::FUN}))
+            return function("function");
         if (match({TokenType::VAR})) 
             return varDeclaration();
 
@@ -39,6 +40,31 @@ std::unique_ptr<Stmt> Parser::declaration() {
         return nullptr;   
     }
 }   
+
+std::unique_ptr<functionStmt> Parser::function(const std::string& kind) {
+
+    Token name = consume(TokenType::IDENTIFIER, "Expect " + kind + " name.");
+    consume(TokenType::LEFT_PAREN, "Expect '(' after " + kind + " declaration.");
+
+    std::vector<std::unique_ptr<Expr>> parameters;
+    if (!check(TokenType::RIGHT_PAREN)) {
+        do {
+            if (parameters.size() >= 255)
+                error(peek(), "Maximum parameter count exceeded (254)");
+            parameters.push_back(expression());
+        } while (match({TokenType::COMMA}));
+    }
+    consume(TokenType::RIGHT_PAREN, "Missing closing brace ')' after " + kind + " parameters.");
+
+    consume(TokenType::LEFT_BRACE, "Expect '{' after " + kind + " arguments (before " + kind + " body).");
+    auto functionBody = block();
+
+    return std::make_unique<functionStmt>(
+        std::move(name),
+        std::move(parameters),
+        std::move(functionBody)
+    );
+}
 
 std::unique_ptr<VarDeclarationStmt> Parser::varDeclaration() {
 
@@ -342,7 +368,37 @@ std::unique_ptr<Expr> Parser::unary() {
         return std::make_unique<Unary>(std::move(expr), std::move(operator_));
     }
     
-    return primary();
+    return functionCall();
+}
+
+std::unique_ptr<Expr> Parser::functionCall() {
+
+    auto expr = primary();
+
+    while (true) {
+        if (match({TokenType::LEFT_PAREN})) {
+            expr = finishCall(std::move(expr));
+        }
+    }
+
+    return expr;
+}
+
+std::unique_ptr<Call> Parser::finishCall(std::unique_ptr<Expr> expr) {
+
+    std::vector<std::unique_ptr<Expr>> arguments;
+    
+    if (!check(TokenType::RIGHT_PAREN)) {
+        do {
+            if (arguments.size() >= 255) 
+                error(peek(), "Maximum argument count exceeded (254)");
+            arguments.push_back(expression());
+        } while (match({TokenType::COMMA}));
+    }
+
+    consume(TokenType::RIGHT_PAREN, "Expect closing ')' after function arguments.");
+
+    return std::make_unique<Call>(std::move(expr), std::move(previous()), std::move(arguments));
 }
 
 std::unique_ptr<Expr> Parser::primary() {
