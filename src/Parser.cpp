@@ -46,12 +46,14 @@ std::unique_ptr<functionStmt> Parser::function(const std::string& kind) {
     Token name = consume(TokenType::IDENTIFIER, "Expect " + kind + " name.");
     consume(TokenType::LEFT_PAREN, "Expect '(' after " + kind + " declaration.");
 
-    std::vector<std::unique_ptr<Expr>> parameters;
+    std::vector<Token> parameters;
     if (!check(TokenType::RIGHT_PAREN)) {
         do {
             if (parameters.size() >= 255)
                 error(peek(), "Maximum parameter count exceeded (254)");
-            parameters.push_back(expression());
+            parameters.push_back(
+                consume(TokenType::IDENTIFIER, "Expect parameter name")
+            );
         } while (match({TokenType::COMMA}));
     }
     consume(TokenType::RIGHT_PAREN, "Missing closing brace ')' after " + kind + " parameters.");
