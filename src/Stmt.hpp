@@ -101,6 +101,7 @@ struct ifStmt : public Stmt {
         v.visit(*this);
     }
 };
+
 struct whileStmt : public Stmt {
 
     std::unique_ptr<Expr> condition;
@@ -128,11 +129,11 @@ struct breakStmt : public Stmt {
 struct functionStmt : public Stmt {
 
     const Token name;
-    std::vector<std::unique_ptr<Expr>> parameters;
+    std::vector<Token> parameters;
     std::vector<std::unique_ptr<Stmt>> bodyStatements;
 
     functionStmt(Token&& name,
-                 std::vector<std::unique_ptr<Expr>>&& parameters,
+                 std::vector<Token>&& parameters,
                  std::vector<std::unique_ptr<Stmt>>&& bodyStatements) 
                  : name{std::move(name)},
                    parameters{std::move(parameters)},  
