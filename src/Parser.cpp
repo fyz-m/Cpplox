@@ -5,6 +5,7 @@
 #include "Token.hpp"
 #include <cerrno>
 #include <ctime>
+#include <iostream>
 #include <memory>
 #include <utility>
 #include <variant>
@@ -58,7 +59,7 @@ std::unique_ptr<functionStmt> Parser::function(const std::string& kind) {
     }
     consume(TokenType::RIGHT_PAREN, "Missing closing brace ')' after " + kind + " parameters.");
 
-    consume(TokenType::LEFT_BRACE, "Expect '{' after " + kind + " arguments (before " + kind + " body).");
+    consume(TokenType::LEFT_BRACE, "Expect '{' after " + kind + " arguments.");
     auto functionBody = block();
 
     return std::make_unique<functionStmt>(
@@ -83,11 +84,16 @@ std::unique_ptr<VarDeclarationStmt> Parser::varDeclaration() {
 
 std::unique_ptr<Stmt> Parser::statement() {
 
-    if (match({TokenType::PRINT}))   return printStatement();
-    if (match({TokenType::IF}))      return ifStatement();
-    if (match({TokenType::WHILE}))   return whileStatement();
-    if (match({TokenType::FOR}))     return forStatement();
-    if (match({TokenType::BREAK}))   return breakStatement();
+    if (match({TokenType::PRINT}))
+        return printStatement();
+    if (match({TokenType::IF}))   
+        return ifStatement();
+    if (match({TokenType::WHILE}))
+        return whileStatement();
+    if (match({TokenType::FOR}))  
+        return forStatement();
+    if (match({TokenType::BREAK}))
+        return breakStatement();
 
     if (match({TokenType::LEFT_BRACE}))
         return std::make_unique<BlockStmt>(block());
@@ -179,7 +185,6 @@ std::unique_ptr<ExpressionStmt> Parser::expressionStatement() {
 std::vector<std::unique_ptr<Stmt>> Parser::block() {
 
     std::vector<std::unique_ptr<Stmt>> statements;
-
     while (!check(TokenType::RIGHT_BRACE) && !isAtEnd()) {
         statements.push_back(declaration());
     }
@@ -381,6 +386,7 @@ std::unique_ptr<Expr> Parser::functionCall() {
         if (match({TokenType::LEFT_PAREN})) {
             expr = finishCall(std::move(expr));
         }
+        break;
     }
 
     return expr;
@@ -489,10 +495,10 @@ void Parser::synchronize() {
             case TokenType::WHILE:
             case TokenType::PRINT:
             case TokenType::RETURN:
-            return;
-            default: break;
+                return;
+            default:
+                advance();
         }
-        advance();
     }
 }
 
