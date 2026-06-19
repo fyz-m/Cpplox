@@ -1,6 +1,6 @@
 #pragma once
 #include <string>
-#include <variant>
+#include "Value.hpp"
 
 enum class TokenType {
   // Single-character tokens.
@@ -25,7 +25,6 @@ enum class TokenType {
   
 // Types that valid for literals in the Lox language
 // monostate == null
-using literaltypes = std::variant<std::monostate, std::string, double, bool>;
 
 class Token {
 
@@ -35,7 +34,7 @@ class Token {
 
     const std::string lexeme;
 
-    literaltypes literal;
+    LoxLiteral literal;
 
     const int line;
     
@@ -45,7 +44,7 @@ class Token {
     Token(
           TokenType type, 
           std::string&& lexeme, 
-          literaltypes&& literal,
+          LoxLiteral&& literal,
           int line
          );
 

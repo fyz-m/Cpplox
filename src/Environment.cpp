@@ -8,11 +8,11 @@ Environment& Environment::getGlobal() {
     static Environment globalInstance;
     return globalInstance;
 }
-void Environment::define(const std::string& name, literaltypes&& value) {
+void Environment::define(const std::string& name, LoxLiteral&& value) {
     Map[name] = std::move(value);
 }   
 
-void Environment::assign(const Token& name, literaltypes&& value) {
+void Environment::assign(const Token& name, LoxLiteral&& value) {
 
     if (Map.contains(name.lexeme)) {
         Map[name.lexeme] = std::move(value); return;
@@ -27,7 +27,7 @@ void Environment::assign(const Token& name, literaltypes&& value) {
     throw RuntimeError(name, "Assignment to undefined variable '" + name.lexeme + "'.");
 }
 
-literaltypes Environment::get(const Token& name) const {
+LoxLiteral Environment::get(const Token& name) const {
     
     if (Map.contains(name.lexeme)) return Map.at(name.lexeme);
     

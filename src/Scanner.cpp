@@ -107,11 +107,11 @@ void Scanner::scanToken()
 // void Scanner::addToken(TokenType TokenType)
 // {
 //   // assign type as std::monostate
-//   literaltypes t = {};
+//   LoxLiteral t = {};
 //   addToken(TokenType, std::move(t));
 // }
 
-void Scanner::addToken(TokenType TokenType, literaltypes&& literal)
+void Scanner::addToken(TokenType TokenType, LoxLiteral&& literal)
 {
   std::string lexeme = Source.substr(start, (current - start));
 

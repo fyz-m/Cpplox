@@ -58,9 +58,9 @@ struct Binary : public Expr {
 
 struct Literal : public Expr {
 
-    const literaltypes value;
+    const LoxLiteral value;
 
-    Literal(literaltypes&& value) : value{std::move(value)} {}
+    Literal(LoxLiteral&& value) : value{std::move(value)} {}
 
     void accept(Visitor& v) override {
         v.visit(*this);

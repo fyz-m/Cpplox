@@ -61,7 +61,7 @@
    void Lox::error(Token& token, std::string_view message)
    {
     if (token.type == TokenType::_EOF)
-      report(token.line, " at end ", message);
+      report(token.line, " at end of line", message);
     else
       report(token.line, " at '" + token.lexeme + "' ", message);
    }

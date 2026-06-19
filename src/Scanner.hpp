@@ -35,7 +35,7 @@ class Scanner {
     // Adds a token 
     void addToken(
           TokenType TokenType, 
-          literaltypes&& literal = {}  // Rvalue to force caller to use std::move
+          LoxLiteral&& literal = {}  // Rvalue to force caller to use std::move
           );                           // So caller is aware that the object will be moved 
     
     // void addToken(TokenType TokenType);

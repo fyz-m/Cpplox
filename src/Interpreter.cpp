@@ -1,6 +1,8 @@
 #include "Interpreter.hpp"
 #include "Expr.hpp"
 #include "Lox.hpp"
+#include "LoxCallable.hpp"
+#include "LoxFunction.hpp"
 #include "Stmt.hpp"
 #include "Token.hpp"
 #include <cerrno>
@@ -31,7 +33,7 @@ void Interpreter::visit(PrintStmt& stmt) {
 
 void Interpreter::visit(VarDeclarationStmt& stmt) {
 
-    literaltypes val {std::monostate{}};
+    LoxLiteral val {std::monostate{}};
 
     if(stmt.initializer != nullptr)
          val = evaluate(*stmt.initializer);
@@ -41,6 +43,11 @@ void Interpreter::visit(VarDeclarationStmt& stmt) {
 
 void Interpreter::visit(ExpressionStmt& stmt) {
     evaluate(*stmt.expression);
+}
+
+void Interpreter::visit(functionStmt& stmt) {
+    std::shared_ptr<LoxCallable> function = std::make_shared<LoxFunction>(stmt);
+    this->environment->define(stmt.name.lexeme, function);
 }
 
 void Interpreter::visit(ifStmt& stmt) {
@@ -62,7 +69,7 @@ void Interpreter::visit(whileStmt& stmt) {
             execute(*stmt.bodyStatements); 
             condition = evaluate(*stmt.condition); 
         }
-    } catch ( BreakException&) {
+    } catch (BreakException&) {
         return;
     }
 }
@@ -155,6 +162,33 @@ void Interpreter::visit(Binary& expr) {
     }
 }
 
+void Interpreter::visit(Call& expr) {
+
+    auto callee = evaluate(*expr.callee);
+
+    // Evaluate arguments
+    std::vector<LoxLiteral> args;
+    for (const auto& arg : expr.arguments) {
+        args.push_back(evaluate(*arg));
+    }
+    
+    // Check if callee is a Function or Class
+    if (auto callable = std::get_if<std::shared_ptr<LoxCallable>>(&callee)->get()) {
+
+         // Validate argument length
+        if (expr.arguments.size() != callable->arity()) {
+            throw RuntimeError(expr.closing_paren, "Expected " +
+                    std::to_string(callable->arity()) + " arguments but got " +
+                    std::to_string(expr.arguments.size()) + ".");
+        }
+
+        callable->call(*this, args);
+    } 
+    else {
+        throw RuntimeError(expr.closing_paren, "Can only call functions and classes.");
+    }
+}
+
 void Interpreter::visit(Literal& expr) {
     // We want to extract the value out of variant
     value = expr.value;
@@ -205,7 +239,7 @@ void Interpreter::visit(Variable& expr) {
     this->value = environment->get(expr.name);
 }
 
-literaltypes Interpreter::evaluate(Expr& expr) {
+LoxLiteral Interpreter::evaluate(Expr& expr) {
      expr.accept(*this);
      return value;
 }
@@ -225,7 +259,7 @@ void Interpreter::executeBlock(const std::vector<std::unique_ptr<Stmt>>& stateme
     }
 }
 
-bool Interpreter::isTruthy(literaltypes& val) {
+bool Interpreter::isTruthy(LoxLiteral& val) {
     // if value is null
     if (val.index() == 0) 
         return false;
@@ -238,18 +272,18 @@ bool Interpreter::isTruthy(literaltypes& val) {
     
 }
 
-bool Interpreter::isEqual(literaltypes& val1, literaltypes& val2) {
+bool Interpreter::isEqual(LoxLiteral& val1, LoxLiteral& val2) {
     return val1 == val2;
 }
 
-void Interpreter::checkifOperandisNumber(const Token& operator_, const literaltypes& operand) {
+void Interpreter::checkifOperandisNumber(const Token& operator_, const LoxLiteral& operand) {
 
     if (std::holds_alternative<double>(operand)) return;
 
     throw RuntimeError(operator_, "Operand must be a number.");
 }
 
-void Interpreter::checkifOperandsAreNumber(const Token& operator_, const literaltypes& left, const literaltypes& right) {
+void Interpreter::checkifOperandsAreNumber(const Token& operator_, const LoxLiteral& left, const LoxLiteral& right) {
 
     if (std::holds_alternative<double>(left) && 
         std::holds_alternative<double>(right)) return;
@@ -257,7 +291,7 @@ void Interpreter::checkifOperandsAreNumber(const Token& operator_, const literal
     throw RuntimeError(operator_, "Operand must be a number.");
 }
 
-std::string Interpreter::stringify(literaltypes& value) {
+std::string Interpreter::stringify(LoxLiteral& value) {
 
     if (std::holds_alternative<std::monostate>(value)) return "nil";
     

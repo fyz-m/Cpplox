@@ -3,10 +3,10 @@
 #include <unordered_map>
 
 class Environment {
-
+ 
     private:
 
-        std::unordered_map<std::string, literaltypes> Map;
+        std::unordered_map<std::string, LoxLiteral> Map;
         
         Environment* enclosingEnv;
     
@@ -20,15 +20,15 @@ class Environment {
         static Environment& getGlobal();
 
         // Define a new variable, allows reassignment
-        void define(const std::string& name, literaltypes&& value);
+        void define(const std::string& name, LoxLiteral&& value);
 
         // Assign an exisiting variable a new value
         // RuntimeError reported if variable doesn't exist
-        void assign(const Token& name, literaltypes&& value);
+        void assign(const Token& name, LoxLiteral&& value);
 
         // Returns the value of a variable 
         // RuntimeError is reported if argument is an undefined variable  
-        literaltypes get(const Token& name) const;
+        LoxLiteral get(const Token& name) const;
 
     private:
 

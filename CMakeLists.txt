@@ -21,7 +21,9 @@ add_executable(cpplox src/main.cpp
                       src/Interpreter.hpp
                       src/Stmt.hpp   
                       src/Environment.hpp
-                      src/Environment.cpp                                        
+                      src/Environment.cpp
+                      src/LoxCallable.hpp
+                      src/LoxFunction.hpp                                        
 )
 
 target_compile_options(cpplox  PRIVATE -Wall -Wextra -Wpedantic  -g3 -O0 -fsanitize=address)

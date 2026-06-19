@@ -5,7 +5,7 @@
   Token::Token(
           TokenType type, 
           std::string&& lexeme, 
-          literaltypes&& literal,
+          LoxLiteral&& literal,
           int line
           )
           : type{type}, 
