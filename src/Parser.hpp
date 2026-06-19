@@ -22,8 +22,10 @@ class Parser {
         int current {0};
 
         // Tracks if the parser is currently in a loop
-        // Contains pointer to loop or nullptr if not currently in a loop
-        whileStmt* enclosingLoop {nullptr};
+        bool inLoop {false};
+
+        // Tracks if parser is in a function
+        bool inFunction {false};
     
     public:
 
@@ -54,6 +56,8 @@ class Parser {
         std::unique_ptr<Stmt> forStatement();
 
         std::unique_ptr<breakStmt> breakStatement();
+
+        std::unique_ptr<returnStmt> returnStatement();
 
         // These functions return an AST for a given expression
         // Ordered from lowest -> highest precedence  

@@ -78,6 +78,10 @@ void Interpreter::visit(breakStmt& stmt) {
     throw BreakException();
 }
 
+void Interpreter::visit(returnStmt& stmt) {
+    throw ReturnException(evaluate(*stmt.retValue));
+}
+
 void Interpreter::visit(BlockStmt& stmt) {
     // Current environment becomes the enclosing env for the blockEnv
     auto blockEnv = std::make_unique<Environment>(this->environment);
@@ -178,12 +182,12 @@ void Interpreter::visit(Call& expr) {
          // Validate argument length
         if (expr.arguments.size() != callable->arity()) {
             throw RuntimeError(expr.closing_paren, "Expected " +
-                    std::to_string(callable->arity()) + " arguments but got " +
-                    std::to_string(expr.arguments.size()) + ".");
+                    std::to_string(callable->arity()) + " argument(s) but got " +
+                    std::to_string(expr.arguments.size()) + " instead.");
         }
 
-        callable->call(*this, args);
-    } 
+        value = callable->call(*this, args);
+    }
     else {
         throw RuntimeError(expr.closing_paren, "Can only call functions and classes.");
     }
@@ -296,12 +300,13 @@ std::string Interpreter::stringify(LoxLiteral& value) {
     if (std::holds_alternative<std::monostate>(value)) return "nil";
     
     if (auto number =  std::get_if<double>(&value)) {
-         return std::to_string(*number);   
+        return std::to_string(*number);   
     };
 
     if (auto boolean =  std::get_if<bool>(&value)) {
-       return *boolean ? "true" : "false"; 
+        return *boolean ? "true" : "false"; 
     }; 
+
 
     return std::get<std::string>(value);
 }

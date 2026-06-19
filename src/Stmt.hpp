@@ -13,6 +13,7 @@ struct ifStmt;
 struct whileStmt;
 struct breakStmt;
 struct functionStmt;
+struct returnStmt;
 
 // Interface for functions to act on a statement node
 struct StmtVisitor {
@@ -24,6 +25,7 @@ struct StmtVisitor {
     virtual void visit(whileStmt& stmt) = 0;
     virtual void visit(breakStmt& stmt) = 0;
     virtual void visit(functionStmt& stmt) = 0;
+    virtual void visit(returnStmt& stmt) = 0;
 };
 
 struct Stmt {
@@ -141,6 +143,18 @@ struct functionStmt : public Stmt {
                 {}
 
      void accept(StmtVisitor &v) override {
+        v.visit(*this);
+    }
+};
+
+struct returnStmt : public Stmt {
+
+    std::unique_ptr<Expr> retValue;
+
+    returnStmt(std::unique_ptr<Expr> retValue) 
+               : retValue{std::move(retValue)} {}
+
+    void accept(StmtVisitor& v) override {
         v.visit(*this);
     }
 };

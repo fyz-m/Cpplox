@@ -1,4 +1,5 @@
 #pragma once
+#include "Interpreter.hpp"
 #include "Stmt.hpp"
 #include "Value.hpp"
 #include "LoxCallable.hpp"
@@ -30,8 +31,12 @@ class LoxFunction : public LoxCallable {
                 auto parameterValue = arguments[i];
                 functionEnv->define(parameterName, std::move(parameterValue));
             }
-
-           interpreter.executeBlock(declaration.bodyStatements, *functionEnv); 
+           try {
+                interpreter.executeBlock(declaration.bodyStatements, *functionEnv); 
+           } catch (const ReturnException& r) {
+                return r.returnValue;
+           }
+           // Return nil
            return std::monostate{};
         }
 

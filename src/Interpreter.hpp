@@ -7,8 +7,10 @@
 #include <stdexcept>
 #include <vector>
 #include "Environment.hpp"
+#include "Value.hpp"
 
 struct envGuard;
+
 // It would have been better to make the visit methods return std::any instead of void
 
 class Interpreter : public Visitor, public StmtVisitor {
@@ -40,6 +42,7 @@ class Interpreter : public Visitor, public StmtVisitor {
         void visit(whileStmt& stmt);
         void visit(breakStmt& stmt);
         void visit(functionStmt& stmt);
+        void visit(returnStmt& stmt);
 
         // Expression node visitor implementation
         void visit(Binary& expr); 
@@ -84,6 +87,15 @@ class RuntimeError : public std::runtime_error {
 };
 
 class BreakException : public std::exception {};
+
+class ReturnException : public std::exception {
+
+    public:
+    LoxLiteral returnValue;
+
+    ReturnException(LoxLiteral returnValue)
+                    : returnValue{std::move(returnValue)} {}
+};
 
 // This ensures that the enviroment is restored 
 // when an exception is thrown  

@@ -5,7 +5,6 @@
 #include "Token.hpp"
 #include <cerrno>
 #include <ctime>
-#include <iostream>
 #include <memory>
 #include <utility>
 #include <variant>
@@ -29,7 +28,7 @@ std::vector<std::unique_ptr<Stmt>> Parser::parse() {
 std::unique_ptr<Stmt> Parser::declaration() {
 
     try { 
-        if (match({TokenType::FUN}))
+        if (match({TokenType::DEF}))
             return function("function");
         if (match({TokenType::VAR})) 
             return varDeclaration();
@@ -60,7 +59,11 @@ std::unique_ptr<functionStmt> Parser::function(const std::string& kind) {
     consume(TokenType::RIGHT_PAREN, "Missing closing brace ')' after " + kind + " parameters.");
 
     consume(TokenType::LEFT_BRACE, "Expect '{' after " + kind + " arguments.");
+
+    bool prev = this->inFunction;
+    this->inFunction = true;
     auto functionBody = block();
+    this->inFunction = prev;
 
     return std::make_unique<functionStmt>(
         std::move(name),
@@ -94,6 +97,8 @@ std::unique_ptr<Stmt> Parser::statement() {
         return forStatement();
     if (match({TokenType::BREAK}))
         return breakStatement();
+    if (match({TokenType::RETURN}))
+        return returnStatement();
 
     if (match({TokenType::LEFT_BRACE}))
         return std::make_unique<BlockStmt>(block());
@@ -124,14 +129,12 @@ std::unique_ptr<Stmt> Parser::forStatement() {
         increment = expression();
     consume(TokenType::RIGHT_PAREN, "Expect ')' after for-loop clauses.");
 
-    // Temporarily use a whileStmt ptr so we can handle break statements in the for-loop body
-    auto whileLoop = std::make_unique<whileStmt>(nullptr, nullptr);
-    auto prevloop = enclosingLoop;
-    enclosingLoop = whileLoop.get();
+    auto prevloop = inLoop;
+    inLoop = true;
 
     // Parse for-loop body
     auto body = statement();
-    enclosingLoop = prevloop;
+    inLoop = prevloop;
 
     // Convert the for-loop into a while-loop:
     // it becomes a blockStmt node where the first statement (in the vector of stmts)
@@ -160,16 +163,15 @@ std::unique_ptr<Stmt> Parser::forStatement() {
     // If condition omitted it gets set to true
     if (for_condition == nullptr) for_condition = std::make_unique<Literal>(true); 
 
-    whileLoop->condition = std::move(for_condition); 
-    whileLoop->bodyStatements = std::move(body);
-    
+    auto whileloop = std::make_unique<whileStmt>(std::move(for_condition), std::move(body));    
+
     if (initializer != nullptr) {
         std::vector<std::unique_ptr<Stmt>> v;
         v.push_back(std::move(initializer));
-        v.push_back(std::move(whileLoop));
+        v.push_back(std::move(whileloop));
         return std::make_unique<BlockStmt>(std::move(v));
     } else {
-        return whileLoop;
+        return whileloop;
     }
         
 }
@@ -222,23 +224,17 @@ std::unique_ptr<whileStmt> Parser::whileStatement() {
     auto condition = expression();
     consume(TokenType::RIGHT_PAREN, "Expect closing ')'.");
 
-    // Create node before parsing body statements because we need to set the parser's 
-    // internal state so it knows it is in a loop. This is so we can handle break
-    // statements that are not in loops (syntax error).  
-    auto whileLoop = std::make_unique<whileStmt>(std::move(condition), nullptr);
+    bool prevStatus = this->inLoop;
+    this->inLoop = true;
+    auto statements = statement();
+    this->inLoop = prevStatus;
 
-    auto prevloop = enclosingLoop;
-    enclosingLoop = whileLoop.get();
-
-    whileLoop->bodyStatements = statement();
-    enclosingLoop = prevloop;
-
-    return whileLoop; 
+    return  std::make_unique<whileStmt>(std::move(condition), std::move(statements));
 }
 
 std::unique_ptr<breakStmt> Parser::breakStatement() {
 
-    if (enclosingLoop == nullptr) {
+    if (!inLoop) {
         error(previous(), "'break' must be inside a for/while loop.");
         return nullptr;
     }
@@ -246,6 +242,21 @@ std::unique_ptr<breakStmt> Parser::breakStatement() {
 
     return std::make_unique<breakStmt>();
 
+}
+
+std::unique_ptr<returnStmt> Parser::returnStatement() {
+    
+    if (!inFunction) {
+        error(previous(), "'return' must be inside a function definition.");
+        return nullptr;
+    }
+    std::unique_ptr<Expr> expr {nullptr};
+
+    if (!check(TokenType::SEMICOLON))
+        expr = expression(); 
+    consume(TokenType::SEMICOLON, "Expect ';' after return expression.");
+
+    return std::make_unique<returnStmt>(std::move(expr));
 }
 
 std::unique_ptr<Expr> Parser::expression() {
@@ -488,7 +499,7 @@ void Parser::synchronize() {
 
         switch (peek().type) {
             case TokenType::CLASS:
-            case TokenType::FUN:
+            case TokenType::DEF:
             case TokenType::VAR:
             case TokenType::FOR:
             case TokenType::IF:
